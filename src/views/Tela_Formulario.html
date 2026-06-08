@@ -1,0 +1,151 @@
+<div id="modal-formulario" class="modal-overlay">
+  <div class="modal-content" style="max-width:800px;">
+    <button class="close-btn" onclick="fecharModal('modal-formulario')">&times;</button>
+    <h3 class="modal-title">🚌 Nova Solicitação de Transporte</h3>
+
+    <!-- ALERTA DE PEDIDO DUPLICADO -->
+    <div id="alerta-duplicado" style="display:none; background:#fff3cd; border:1.5px solid #ffc107; border-radius:11px; padding:12px 16px; margin-bottom:16px; font-size:.8rem; font-weight:700; color:#856404;">
+      ⚠️ <strong>Atenção:</strong> <span id="alerta-duplicado-texto"></span>
+    </div>
+
+    <form id="formPedido" onsubmit="enviarPedido(event)">
+      <input type="hidden" id="form-edicao-linhas">
+
+      <!-- Unidade -->
+      <div class="form-row">
+        <div class="form-group" style="width:100%;">
+          <label>Unidade Escolar *</label>
+          <div id="container-unidade">
+            <input type="text" id="form-unidade" required disabled>
+          </div>
+        </div>
+      </div>
+
+      <!-- Evento + Data -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Evento / Destino *</label>
+          <select id="form-evento" required onchange="aplicarRegrasDoEvento()">
+            <option value="">Lendo eventos do sistema...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Data do Agendamento *</label>
+          <input type="date" id="form-data" required onchange="verificarDuplicado()">
+        </div>
+      </div>
+
+      <!-- Origem + Destino -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Endereço de Partida *</label>
+          <input type="text" id="form-origem" required placeholder="Endereço da Escola">
+        </div>
+        <div class="form-group">
+          <label>Endereço de Destino *</label>
+          <input type="text" id="form-destino" required placeholder="Endereço do Local">
+        </div>
+      </div>
+
+      <!-- Período (oculto) + Horário Saída + Horário Retorno -->
+      <div class="form-row">
+        <div class="form-group" style="display:none;">
+          <label>Período *</label>
+          <select id="form-periodo" required onchange="verificarDuplicado()">
+            <option value="Manhã">Manhã</option>
+            <option value="Tarde">Tarde</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Horário de Saída da Escola *</label>
+          <input type="time" id="form-ida" step="300" required>
+        </div>
+        <div class="form-group">
+          <label>Horário Previsto de Retorno</label>
+          <input type="time" id="form-volta" step="300" placeholder="Opcional">
+          <small style="font-size:.65rem; color:var(--texto-muted); display:block; margin-top:4px;">Ajuda a empresa a planejar a escala do dia.</small>
+        </div>
+      </div>
+
+      <!-- Detalhes condicionais (CAUIM / texto / outros) -->
+      <div class="form-row" id="div-detalhes"
+        style="display:none; background:var(--azul-claro); padding:14px; border-radius:12px; border:1px solid var(--borda);">
+        <div class="form-group" id="grupo-filme-cauim" style="display:none; width:100%;">
+          <label style="color:var(--primary);">Filme Escolhido (CAUIM) *</label>
+          <select id="form-filme-select"><option value="">Carregando filmes...</option></select>
+        </div>
+        <div class="form-group" id="grupo-detalhe-texto" style="display:none; width:100%;">
+          <label style="color:var(--primary);">Detalhe da Atividade</label>
+          <input type="text" id="form-detalhe" placeholder="Ex: Peça Teatral X, Exposição Y">
+        </div>
+        <div class="form-group" id="grupo-titulo-outros" style="display:none; width:100%;">
+          <label style="color:var(--primary);">Qual é o Evento? *</label>
+          <input type="text" id="form-titulo-outros" placeholder="Digite o nome do seu evento">
+        </div>
+      </div>
+
+      <!-- Responsável + Telefone -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Professor(a) Responsável *</label>
+          <input type="text" id="form-resp" required placeholder="Nome de quem acompanhará os alunos">
+        </div>
+        <div class="form-group">
+          <label>Celular do Responsável *</label>
+          <input type="tel" id="form-tel" required placeholder="(00) 00000-0000" oninput="maskPhone(this)">
+        </div>
+      </div>
+
+      <!-- Turmas + Total passageiros -->
+      <div class="form-row">
+        <div class="form-group" style="flex:3;">
+          <label>Selecione as Turmas *</label>
+          <div id="box-turmas"
+            style="border:1.5px solid var(--borda); padding:10px; border-radius:10px;
+                   max-height:200px; overflow-y:auto; background:var(--input-bg);">
+            <small style="color:var(--texto-muted);">Aguarde...</small>
+          </div>
+          <input type="text" id="form-turmas" required
+            style="opacity:0; position:absolute; height:0; width:0; z-index:-1;">
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label>Total de Passageiros *</label>
+          <input type="number" id="form-qtd" required placeholder="Ex: 45"
+            oninput="calcularLotacaoTempoReal()">
+          <div id="aviso-lotacao" style="display:none; margin-top:8px; font-size:.72rem;
+            padding:8px 12px; border-radius:9px; line-height:1.4; border:1px solid var(--borda);
+            font-weight:700;"></div>
+        </div>
+      </div>
+
+      <!-- Acessibilidade -->
+      <div class="form-row">
+        <div class="form-group checkbox-group" style="flex:2;">
+          <input type="checkbox" id="form-acess"
+            style="width:20px; height:20px; cursor:pointer;"
+            onchange="toggleQtdAdaptado()">
+          <label for="form-acess" style="margin:0; cursor:pointer; font-weight:800; font-size:.82rem;">
+            Necessita de Transporte Adaptado (Cadeirante)
+          </label>
+        </div>
+        <div class="form-group" id="grupo-qtd-adaptado" style="display:none; flex:1;">
+          <label>Qtd. Cadeirantes *</label>
+          <input type="number" id="form-qtd-adaptado" placeholder="Quantos passageiros?">
+        </div>
+      </div>
+
+      <!-- Observações (condicional para "Outros") -->
+      <div class="form-row" id="grupo-obs" style="display:none;">
+        <div class="form-group" style="width:100%;">
+          <label>Observações Adicionais *</label>
+          <textarea id="form-obs" rows="3"
+            placeholder="Detalhes importantes para o motorista ou para a secretaria..."></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btn-salvar">
+        Enviar Solicitação de Transporte
+      </button>
+    </form>
+  </div>
+</div>

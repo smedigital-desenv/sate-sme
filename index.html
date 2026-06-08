@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SATE - Transporte Escolar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="./css/styles.css">
+  </head>
+  <body>
+    <div id="toast-container"></div>
+
+    <header class="nav-header">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="nav-brand-icon">🚌</div>
+          <div>
+            <div class="nav-brand-title">SATE</div>
+            <div class="nav-brand-sub">Sistema de Agendamento do Transporte Escolar</div>
+          </div>
+        </div>
+
+        <div class="nav-tabs-mapa">
+          <input type="radio" name="mainNav" id="navEscola" checked>
+          <label for="navEscola" onclick="mudarTela('escola')">🏫 Escola</label>
+
+          <input type="radio" name="mainNav" id="navAdmin">
+          <label for="navAdmin" id="label-admin" onclick="mudarTela('admin')" style="display:none;">⚙️ Administração</label>
+
+          <input type="radio" name="mainNav" id="navEmpresa">
+          <label for="navEmpresa" id="label-empresa" onclick="mudarTela('empresa')" style="display:none;">🚌 Empresa</label>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <button id="btn-nova-sol-global" class="nav-btn nav-btn-verde" onclick="abrirModal('modal-formulario')" style="display:none;">
+            ➕ Nova Solicitação
+          </button>
+          <button id="btn-visao-escola" class="nav-btn nav-btn-roxo" onclick="toggleVisaoEscola()" style="display:none;">
+            👁️ Visão: Admin
+          </button>
+          <button id="btn-simulacao" class="nav-btn nav-btn-danger" onclick="toggleSimulacao()" style="display:none;">
+            💻 SIMULAÇÃO (ON)
+          </button>
+          <button id="btn-dark-mode" class="nav-btn nav-btn-dark" onclick="toggleDarkMode()" style="display:none;">
+            🌙 Escuro
+          </button>
+          <div class="nav-user-badge">
+            <small id="user-info">Carregando...</small>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-wrap">
+<div id="tela-escola" class="tela ativa">
+
+  <!-- SUBTABS -->
+  <div class="subtabs-container" style="border-bottom:2px solid var(--borda); padding-bottom:10px; margin-bottom:22px;">
+    <button class="btn-subtab ativo" onclick="mudarSubAbaEscola('painel')">Painel da Escola</button>
+    <button class="btn-subtab" onclick="mudarSubAbaEscola('calendario')">📅 Calendário</button>
+  </div>
+
+  <!-- ── PAINEL ────────────────────────────────────── -->
+  <div id="subaba-escola-painel" class="subaba-escola ativa">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+      <h3 style="margin:0; color:var(--primary); font-weight:900; font-size:1rem;">Acompanhamento de Solicitações</h3>
+      <button id="btn-view-mode" onclick="toggleViewMode()" class="btn-toggle-view">Visualização em Lista</button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-4">
+        <div class="card-kpi" style="color:var(--primary);">
+          <div class="kpi-val" id="user-dash-analise">0</div>
+          <div class="kpi-label">Em Análise</div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-4">
+        <div class="card-kpi" style="color:var(--verde);">
+          <div class="kpi-val" id="user-dash-aprovados">0</div>
+          <div class="kpi-label">Aprovados / Na Rota</div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-4">
+        <div class="card-kpi" style="color:var(--vermelho);">
+          <div class="kpi-val" id="user-dash-recusados">0</div>
+          <div class="kpi-label">Recusados / Cancelados</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros-avancados">
+      <div class="form-group" style="flex:2; min-width:200px;">
+        <label>Pesquisa Rápida</label>
+        <input type="text" id="filtro-user-busca" placeholder="Buscar evento, destino, status..." onkeyup="filtrarAcompanhamento()">
+      </div>
+      <div class="form-group">
+        <label>Data</label>
+        <input type="date" id="filtro-user-data" onchange="filtrarAcompanhamento()">
+      </div>
+      <div class="form-group">
+        <label>Destino</label>
+        <select id="filtro-user-destino" onchange="filtrarAcompanhamento()"><option value="">Todos</option></select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="filtro-user-status" onchange="filtrarAcompanhamento()"><option value="">Todos</option></select>
+      </div>
+      <div class="form-group">
+        <label>Turmas</label>
+        <select id="filtro-user-turmas" onchange="filtrarAcompanhamento()"><option value="">Todas</option></select>
+      </div>
+    </div>
+
+    <div id="loading-cards" class="loader">Carregando suas solicitações...</div>
+
+    <!-- Cards -->
+    <div id="escola-view-cards" class="grid-cards" style="margin-bottom:22px;">
+      <div id="meus-cards" style="display:contents;"></div>
+    </div>
+
+    <!-- Lista -->
+    <div id="escola-view-lista" style="display:none; margin-bottom:22px;" class="table-container">
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Data / Período</th>
+              <th>Unidade Escolar</th>
+              <th>Evento / Destino</th>
+              <th>Passageiros</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-escola-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Paginação -->
+    <div id="controles-paginacao" class="paginacao-container">
+      <button id="btn-prev" class="btn-paginacao" onclick="mudarPagina(-1)">◀ Anterior</button>
+      <span id="info-pagina" style="font-size:.82rem; color:var(--texto-muted); font-weight:800;">Página 1</span>
+      <button id="btn-next" class="btn-paginacao" onclick="mudarPagina(1)">Próxima ▶</button>
+    </div>
+
+  </div>
+
+  <!-- ── CALENDÁRIO ────────────────────────────────── -->
+  <div id="subaba-escola-calendario" class="subaba-escola">
+    <div class="card" style="border-top:none; border-radius:14px;">
+      <div class="cal-nav">
+        <button onclick="mudarMes(-1)">◀ Anterior</button>
+        <h3 id="cal-mes-ano" style="margin:0; color:var(--primary); font-weight:900; font-size:1rem;">Mês Ano</h3>
+        <button onclick="mudarMes(1)">Próximo ▶</button>
+      </div>
+      <div class="cal-grid">
+        <div class="cal-header">Dom</div><div class="cal-header">Seg</div><div class="cal-header">Ter</div>
+        <div class="cal-header">Qua</div><div class="cal-header">Qui</div><div class="cal-header">Sex</div><div class="cal-header">Sáb</div>
+      </div>
+      <div id="cal-dias" class="cal-grid"></div>
+    </div>
+  </div>
+
+</div>
+<div id="tela-admin" class="tela">
+
+  <!-- SIDEBAR LATERAL -->
+  <nav class="admin-sidebar" id="admin-sidebar" aria-label="Menu de administração">
+    <button class="admin-sidebar-toggle" onclick="toggleAdminSidebar()" title="Expandir/recolher menu" aria-label="Expandir menu">
+      ☰
+    </button>
+
+    <button class="admin-sb-item ativo" onclick="mudarAbaAdmin('pedidos')" title="Gestão de Pedidos">
+      <span class="sb-icon">📋</span>
+      <span class="sb-txt">Gestão de Pedidos</span>
+    </button>
+
+    <button class="admin-sb-item" onclick="mudarAbaAdmin('veiculos')" title="Frota e Motoristas">
+      <span class="sb-icon">🚌</span>
+      <span class="sb-txt">Frota e Motoristas</span>
+    </button>
+
+    <button class="admin-sb-item" onclick="mudarAbaAdmin('frota-datas')" title="Disponibilidade de Frota">
+      <span class="sb-icon">🗓️</span>
+      <span class="sb-txt">Disponib. de Frota</span>
+    </button>
+
+    <button class="admin-sb-item" onclick="mudarAbaAdmin('usuarios')" title="Usuários">
+      <span class="sb-icon">👥</span>
+      <span class="sb-txt">Usuários</span>
+    </button>
+
+    <div class="admin-sb-separador"></div>
+
+    <button class="admin-sb-item" onclick="mudarAbaAdmin('programacoes')" title="Programações">
+      <span class="sb-icon">🎬</span>
+      <span class="sb-txt">Programações</span>
+    </button>
+
+    <button class="admin-sb-item" onclick="mudarAbaAdmin('agendas')" title="Agendas">
+      <span class="sb-icon">📅</span>
+      <span class="sb-txt">Agendas</span>
+    </button>
+
+    <button class="admin-sb-item" onclick="mudarAbaAdmin('midia')" title="Layout Pré-Cadastro">
+      <span class="sb-icon">🖼️</span>
+      <span class="sb-txt">Layout / Mídia</span>
+    </button>
+
+    <div class="admin-sb-separador"></div>
+
+    <button class="admin-sb-item" onclick="mudarAbaAdmin('configuracoes')" title="Configurações">
+      <span class="sb-icon">⚙️</span>
+      <span class="sb-txt">Configurações</span>
+    </button>
+
+    <button class="admin-sb-item" onclick="mudarAbaAdmin('reservas')" title="Reservas de Frota">
+      <span class="sb-icon">🔒</span>
+      <span class="sb-txt">Reservas de Frota</span>
+    </button>
+  </nav>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <div class="admin-content">
+
+    <!-- ── ABA: GESTÃO DE PEDIDOS ───────────────────── -->
+    <div id="admin-aba-pedidos" class="aba-admin ativa">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">📋 Gestão de Pedidos</h3>
+
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-4">
+          <div class="card-kpi" style="color:var(--primary);">
+            <div class="kpi-val" id="dash-analise">0</div>
+            <div class="kpi-label">Em Análise</div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-4">
+          <div class="card-kpi" style="color:var(--verde);">
+            <div class="kpi-val" id="dash-aprovados">0</div>
+            <div class="kpi-label">Aprovados</div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-4">
+          <div class="card-kpi" style="color:var(--vermelho);">
+            <div class="kpi-val" id="dash-recusados">0</div>
+            <div class="kpi-label">Recusados / Cancelados</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filtros-avancados mb-4">
+        <div class="form-group" style="flex:2; min-width:220px;">
+          <label>Pesquisa Rápida</label>
+          <input type="text" id="filtro-admin" placeholder="Pesquisar unidade, evento, status..." onkeyup="filtrarTabelaAdmin()">
+        </div>
+        <div class="form-group">
+          <label>Data</label>
+          <input type="date" id="filtro-data" onchange="filtrarTabelaAdmin()">
+        </div>
+        <div class="form-group">
+          <label>Período</label>
+          <select id="filtro-periodo" onchange="filtrarTabelaAdmin()"><option value="">Todos</option></select>
+        </div>
+        <div class="form-group">
+          <label>Unidade Escolar</label>
+          <select id="filtro-unidade" onchange="filtrarTabelaAdmin()"><option value="">Todas</option></select>
+        </div>
+        <div class="form-group">
+          <label>Evento / Destino</label>
+          <select id="filtro-evento" onchange="filtrarTabelaAdmin()"><option value="">Todos</option></select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="filtro-status" onchange="filtrarTabelaAdmin()"><option value="">Todos</option></select>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Data / Período</th>
+                <th>Unidade Escolar</th>
+                <th>Evento / Destino</th>
+                <th>Passageiros</th>
+                <th>Status</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-admin-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ABA: FROTA E MOTORISTAS ──────────────────── -->
+    <div id="admin-aba-veiculos" class="aba-admin">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">🚌 Frota e Motoristas</h3>
+
+      <div class="subtabs-container mb-4">
+        <button class="btn-subtab ativo" onclick="mudarSubAbaFrotaAdmin('veiculos')">🚐 Frota Escolar</button>
+        <button class="btn-subtab" onclick="mudarSubAbaFrotaAdmin('motoristas')">🧑‍✈️ Motoristas</button>
+      </div>
+
+      <div id="frota-veiculos-admin" class="subaba-frota-admin ativa">
+        <div class="filtros-avancados mb-4">
+          <div class="form-group" style="flex:2; min-width:200px;">
+            <label>Buscar Veículo, Placa ou Motorista</label>
+            <input type="text" id="filtro-v-busca" placeholder="Pesquisar..." onkeyup="filtrarVeiculos()">
+          </div>
+          <div class="form-group"><label>Empresa Parceira</label><select id="filtro-v-empresa" onchange="filtrarVeiculos()"><option value="">Todas</option></select></div>
+          <div class="form-group"><label>Tipo</label><select id="filtro-v-tipo" onchange="filtrarVeiculos()"><option value="">Todos</option></select></div>
+          <div class="form-group"><label>Lotação</label><select id="filtro-v-lotacao" onchange="filtrarVeiculos()"><option value="">Todas</option></select></div>
+          <div class="form-group"><label>Disponibilidade</label><select id="filtro-v-disp" onchange="filtrarVeiculos()"><option value="">Todas</option></select></div>
+          <div style="align-self:flex-end;">
+            <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="abrirModalVeiculo()">
+              ➕ Novo Veículo
+            </button>
+          </div>
+        </div>
+        <div id="loading-veiculos" class="loader">Lendo veículos do sistema...</div>
+        <div id="lista-veiculos" class="grid-cards"></div>
+      </div>
+
+      <div id="frota-motoristas-admin" class="subaba-frota-admin">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+          <h4 style="margin:0; color:var(--primary); font-weight:900;">Motoristas Cadastrados</h4>
+          <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="abrirModalMotorista()">
+            ➕ Cadastrar Motorista
+          </button>
+        </div>
+        <div id="loading-motoristas" class="loader">Lendo motoristas...</div>
+        <div id="lista-motoristas-admin" class="grid-cards"></div>
+      </div>
+    </div>
+
+    <!-- ── ABA: DISPONIBILIDADE DE FROTA POR DATA ──── -->
+    <div id="admin-aba-frota-datas" class="aba-admin">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">🗓️ Disponibilidade de Frota</h3>
+
+      <div style="background:var(--azul-claro); color:var(--primary); padding:12px 16px; border-left:4px solid var(--primary); border-radius:12px; margin-bottom:20px; font-size:.8rem; font-weight:700;">
+        Configure os ônibus disponíveis por período. Padrão: <strong id="txt-frota-padrao">6 manhã + 6 tarde</strong>. Exceções por data sobrepõem o padrão.
+      </div>
+
+      <!-- Configuração do padrão -->
+      <div class="card mb-4" style="border-top-color:var(--primary);">
+        <div style="font-size:.8rem; font-weight:900; color:var(--primary); margin-bottom:14px;">⚙️ Frota Padrão por Período</div>
+        <div class="form-row" style="align-items:flex-end;">
+          <div class="form-group" style="flex:1; min-width:140px;">
+            <label>🌅 Ônibus — Manhã</label>
+            <input type="number" id="cfg-frota-manha" min="0" max="99" value="6" oninput="previewFrotaPadrao()">
+          </div>
+          <div class="form-group" style="flex:1; min-width:140px;">
+            <label>🌇 Ônibus — Tarde</label>
+            <input type="number" id="cfg-frota-tarde" min="0" max="99" value="6" oninput="previewFrotaPadrao()">
+          </div>
+          <div class="form-group" style="flex:1; min-width:140px;">
+            <label>📊 Total por dia</label>
+            <div id="preview-total-frota" style="padding:9px 12px; border:1.5px solid var(--borda); border-radius:10px; font-size:.88rem; font-weight:900; color:var(--primary); background:var(--azul-claro);">12 ônibus/dia</div>
+          </div>
+          <div style="align-self:flex-end; flex-shrink:0;">
+            <button class="btn-submit" style="width:auto; margin:0; padding:9px 18px; font-size:.78rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="salvarFrotaPadrao()">
+              💾 Salvar Padrão
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-sm-3">
+          <div class="card-kpi" style="color:var(--primary);">
+            <div class="kpi-val" id="kpi-frota-padrao">6M+6T</div>
+            <div class="kpi-label">Frota Padrão</div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-3">
+          <div class="card-kpi" style="color:var(--verde);">
+            <div class="kpi-val" id="kpi-frota-excecoes">0</div>
+            <div class="kpi-label">Exceções Ativas</div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-3">
+          <div class="card-kpi" style="color:var(--laranja);">
+            <div class="kpi-val" id="kpi-frota-hoje">0</div>
+            <div class="kpi-label">Disponíveis Hoje (manhã)</div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-3">
+          <div class="card-kpi" style="color:var(--roxo);">
+            <div class="kpi-val" id="kpi-frota-semana">0</div>
+            <div class="kpi-label">Menor (próx. 7 dias)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ações + Visualização -->
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <h4 style="margin:0; color:var(--primary); font-weight:900;">Exceções de Disponibilidade</h4>
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--laranja); border-color:var(--laranja); color:#fff;" onclick="abrirModalFrotaData()">
+            ➕ Nova Exceção
+          </button>
+          <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--roxo); border-color:var(--roxo); color:#fff;" onclick="limparExcecoesExpiradas()">
+            🧹 Limpar Expiradas
+          </button>
+        </div>
+      </div>
+
+      <div class="card mb-4" style="border-top-color:var(--primary);">
+        <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+          <div style="font-size:.8rem; font-weight:900; color:var(--primary);">📊 Visualização mensal</div>
+          <button class="btn-subtab" onclick="mudarMesFrota(-1)">◀</button>
+          <span id="frota-mes-titulo" style="font-size:.88rem; font-weight:900; color:var(--primary);">Mês Atual</span>
+          <button class="btn-subtab" onclick="mudarMesFrota(1)">▶</button>
+          <div class="d-flex align-items-center gap-3 ms-auto" style="font-size:.68rem; font-weight:800; flex-wrap:wrap;">
+            <span><span style="display:inline-block;width:10px;height:10px;background:#d4edda;border-radius:2px;margin-right:3px;"></span>Plena</span>
+            <span><span style="display:inline-block;width:10px;height:10px;background:#fff3cd;border-radius:2px;margin-right:3px;"></span>Reduzida</span>
+            <span><span style="display:inline-block;width:10px;height:10px;background:#fde8e8;border-radius:2px;margin-right:3px;"></span>Sem frota</span>
+            <span><span style="display:inline-block;width:10px;height:10px;background:var(--input-disabled);border-radius:2px;margin-right:3px;"></span>Fim de semana</span>
+          </div>
+        </div>
+        <div id="grade-frota-mes" style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; font-size:.65rem;"></div>
+      </div>
+
+      <div class="table-container">
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Data Início</th>
+                <th>Data Fim</th>
+                <th>Período</th>
+                <th>Ônibus Disponíveis</th>
+                <th>Motivo</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-frota-datas-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ABA: USUÁRIOS ────────────────────────────── -->
+    <div id="admin-aba-usuarios" class="aba-admin">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">👥 Usuários</h3>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <span></span>
+        <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="abrirModalUsuario()">
+          ➕ Novo Usuário
+        </button>
+      </div>
+      <div class="filtros-avancados mb-4">
+        <div class="form-group" style="flex:2; min-width:200px;"><label>Buscar Nome ou E-mail</label><input type="text" id="filtro-u-busca" placeholder="Pesquisar..." onkeyup="filtrarUsuarios()"></div>
+        <div class="form-group"><label>Unidade / Escola</label><select id="filtro-u-und" onchange="filtrarUsuarios()"><option value="">Todas</option></select></div>
+        <div class="form-group"><label>Perfil</label><select id="filtro-u-perfil" onchange="filtrarUsuarios()"><option value="">Todos</option></select></div>
+        <div class="form-group"><label>Status</label><select id="filtro-u-status" onchange="filtrarUsuarios()"><option value="">Todos</option></select></div>
+      </div>
+      <div class="table-container">
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Unidade/Escola</th><th>Função</th><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Ativo</th><th>Ações</th></tr></thead>
+            <tbody id="tabela-usuarios-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ABA: PROGRAMAÇÕES ─────────────────────────── -->
+    <div id="admin-aba-programacoes" class="aba-admin">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">🎬 Programações</h3>
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div class="subtabs-container" id="nav-pilulas-programacoes" style="margin:0;"></div>
+        <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--laranja); border-color:var(--laranja); color:#fff;" onclick="abrirModalCriarEstrutura('Programacao')">➕ Novo Catálogo</button>
+      </div>
+      <div id="container-programacoes-dinamicas"></div>
+    </div>
+
+    <!-- ── ABA: AGENDAS ──────────────────────────────── -->
+    <div id="admin-aba-agendas" class="aba-admin">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">📅 Agendas</h3>
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div class="subtabs-container" id="nav-pilulas-agendas" style="margin:0;"></div>
+        <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--laranja); border-color:var(--laranja); color:#fff;" onclick="abrirModalCriarEstrutura('Agenda')">➕ Nova Agenda</button>
+      </div>
+      <div id="container-agendas-dinamicas"></div>
+    </div>
+
+    <!-- ── ABA: LAYOUT PRÉ-CADASTRO ─────────────────── -->
+    <div id="admin-aba-midia" class="aba-admin">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">🖼️ Layout / Mídia</h3>
+      <div style="background:var(--azul-claro); color:var(--primary); padding:12px 16px; border-left:4px solid var(--primary); border-radius:12px; margin-bottom:20px; font-size:.8rem; font-weight:700;">
+        🖼️ <strong>CMS:</strong> Insira foto, texto e links para cada evento da agenda.
+      </div>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <span></span>
+        <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="abrirModalMidia()">➕ Personalizar Pré-Cadastro</button>
+      </div>
+      <div class="table-container">
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Evento (Agenda)</th><th>Tem Imagem?</th><th>Descrição / Texto</th><th>Anexos Extras</th><th>Ações</th></tr></thead>
+            <tbody id="tabela-midia-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ABA: CONFIGURAÇÕES ────────────────────────── -->
+    <div id="admin-aba-configuracoes" class="aba-admin">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">⚙️ Configurações</h3>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <span></span>
+        <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="abrirModalConfig()">➕ Nova Regra</button>
+      </div>
+      <div class="filtros-avancados mb-4">
+        <div class="form-group" style="flex:1;"><label>Buscar Chave ou Descrição</label><input type="text" id="filtro-cfg-busca" placeholder="Pesquisar..." onkeyup="filtrarConfig()"></div>
+      </div>
+      <div class="table-container">
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>CHAVE</th><th>VALOR</th><th>DESCRIÇÃO</th><th>Ações</th></tr></thead>
+            <tbody id="tabela-config-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ABA: RESERVAS DE FROTA ────────────────────── -->
+    <div id="admin-aba-reservas" class="aba-admin">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">🔒 Reservas de Frota</h3>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <span></span>
+        <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="abrirModalReserva()">🔒 Nova Reserva Global</button>
+      </div>
+      <div class="card mb-4" style="border-top-color:var(--primary);">
+        <p style="margin:0 0 12px 0; font-size:.8rem; font-weight:900; color:var(--primary);">💡 Clique nos dias para selecionar datas do lote.</p>
+        <div id="cal-reserva-lote" class="cal-grid" style="grid-template-columns:repeat(7,1fr); font-size:.7rem;"></div>
+      </div>
+      <div class="table-container">
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Data Alvo</th><th>Período</th><th>Qtd Ônibus</th><th>Evento/Motivo</th><th>Expiração</th><th>Ações</th></tr></thead>
+            <tbody id="tabela-reservas-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /admin-content -->
+
+</div><!-- /tela-admin -->
+<div id="tela-empresa" class="tela">
+
+  <!-- TABS EMPRESA -->
+  <div class="tabs-container">
+    <button class="btn-tab-admin ativo" onclick="mudarAbaEmpresa('despacho')">🚌 Roteiro e Despacho Diário</button>
+    <button class="btn-tab-admin" onclick="mudarAbaEmpresa('frota')">📋 Gestão da Minha Frota</button>
+  </div>
+
+  <!-- ── ABA: DESPACHO DIÁRIO ──────────────────────── -->
+  <div id="empresa-aba-despacho" class="aba-admin ativa">
+
+    <!-- Cabeçalho + Filtros de data -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+      <h4 style="margin:0; color:var(--primary); font-weight:900;">Solicitações Aprovadas para Viagem</h4>
+
+      <div class="d-flex align-items-center gap-2 flex-wrap" style="background:var(--card-bg); padding:6px; border-radius:12px; border:1px solid var(--borda);">
+        <button class="btn-subtab ativo" id="btn-filtro-hoje" onclick="filtrarDespachoData('hoje')">Hoje</button>
+        <button class="btn-subtab" id="btn-filtro-amanha" onclick="filtrarDespachoData('amanha')">Amanhã</button>
+        <button class="btn-subtab" id="btn-filtro-5dias" onclick="filtrarDespachoData('5dias')">Próximos 5 Dias</button>
+        <span style="color:var(--borda); padding:0 4px;">|</span>
+        <input type="date" id="empresa-data-especifica"
+          onchange="filtrarDespachoData('especifica')"
+          style="padding:7px 12px; border:1.5px solid var(--borda); border-radius:9px; font-size:.78rem; font-weight:700; background:var(--input-bg); color:var(--texto); outline:none;">
+      </div>
+    </div>
+
+    <!-- KPIs de frota -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6">
+        <div class="card-kpi" style="color:var(--verde);">
+          <div class="kpi-val" id="empresa-frota-disp">0</div>
+          <div class="kpi-label">Ônibus Disponíveis</div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6">
+        <div class="card-kpi" style="color:var(--laranja);">
+          <div class="kpi-val" id="empresa-frota-req">0</div>
+          <div class="kpi-label">Ônibus Necessários (Dia)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de despacho -->
+    <div id="lista-despacho">
+      <p class="loader">Selecione uma data para buscar as viagens...</p>
+    </div>
+
+  </div>
+
+  <!-- ── ABA: GESTÃO DA FROTA ──────────────────────── -->
+  <div id="empresa-aba-frota" class="aba-admin">
+
+    <div class="subtabs-container mb-4">
+      <button class="btn-subtab ativo" onclick="mudarSubAbaFrota('veiculos', 'empresa')">🚐 Meus Veículos</button>
+      <button class="btn-subtab" onclick="mudarSubAbaFrota('motoristas', 'empresa')">🧑‍✈️ Meus Motoristas</button>
+    </div>
+
+    <!-- Sub: Veículos -->
+    <div id="frota-veiculos-empresa" class="subaba-frota-empresa ativa">
+
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <h4 style="margin:0; color:var(--primary); font-weight:900;">Meus Veículos Cadastrados</h4>
+        <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="abrirModalVeiculo()">
+          ➕ Novo Veículo
+        </button>
+      </div>
+
+      <div class="filtros-avancados mb-4">
+        <div class="form-group" style="flex:2; min-width:200px;">
+          <label>Buscar Veículo ou Placa</label>
+          <input type="text" id="filtro-v-busca-emp" placeholder="Pesquisar..." onkeyup="filtrarVeiculosEmpresa()">
+        </div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="filtro-v-tipo-emp" onchange="filtrarVeiculosEmpresa()"><option value="">Todos</option></select>
+        </div>
+        <div class="form-group">
+          <label>Disponibilidade</label>
+          <select id="filtro-v-disp-emp" onchange="filtrarVeiculosEmpresa()"><option value="">Todas</option></select>
+        </div>
+      </div>
+
+      <div id="lista-veiculos-empresa" class="grid-cards"></div>
+    </div>
+
+    <!-- Sub: Motoristas -->
+    <div id="frota-motoristas-empresa" class="subaba-frota-empresa">
+
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <h4 style="margin:0; color:var(--primary); font-weight:900;">Minha Equipe de Motoristas</h4>
+        <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="abrirModalMotorista()">
+          ➕ Cadastrar Motorista
+        </button>
+      </div>
+
+      <div id="lista-motoristas-empresa" class="grid-cards"></div>
+    </div>
+
+  </div>
+
+</div>
+    </main>
+
+<div id="modal-formulario" class="modal-overlay">
+  <div class="modal-content" style="max-width:800px;">
+    <button class="close-btn" onclick="fecharModal('modal-formulario')">&times;</button>
+    <h3 class="modal-title">🚌 Nova Solicitação de Transporte</h3>
+
+    <!-- ALERTA DE PEDIDO DUPLICADO -->
+    <div id="alerta-duplicado" style="display:none; background:#fff3cd; border:1.5px solid #ffc107; border-radius:11px; padding:12px 16px; margin-bottom:16px; font-size:.8rem; font-weight:700; color:#856404;">
+      ⚠️ <strong>Atenção:</strong> <span id="alerta-duplicado-texto"></span>
+    </div>
+
+    <form id="formPedido" onsubmit="enviarPedido(event)">
+      <input type="hidden" id="form-edicao-linhas">
+
+      <!-- Unidade -->
+      <div class="form-row">
+        <div class="form-group" style="width:100%;">
+          <label>Unidade Escolar *</label>
+          <div id="container-unidade">
+            <input type="text" id="form-unidade" required disabled>
+          </div>
+        </div>
+      </div>
+
+      <!-- Evento + Data -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Evento / Destino *</label>
+          <select id="form-evento" required onchange="aplicarRegrasDoEvento()">
+            <option value="">Lendo eventos do sistema...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Data do Agendamento *</label>
+          <input type="date" id="form-data" required onchange="verificarDuplicado()">
+        </div>
+      </div>
+
+      <!-- Origem + Destino -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Endereço de Partida *</label>
+          <input type="text" id="form-origem" required placeholder="Endereço da Escola">
+        </div>
+        <div class="form-group">
+          <label>Endereço de Destino *</label>
+          <input type="text" id="form-destino" required placeholder="Endereço do Local">
+        </div>
+      </div>
+
+      <!-- Período (oculto) + Horário Saída + Horário Retorno -->
+      <div class="form-row">
+        <div class="form-group" style="display:none;">
+          <label>Período *</label>
+          <select id="form-periodo" required onchange="verificarDuplicado()">
+            <option value="Manhã">Manhã</option>
+            <option value="Tarde">Tarde</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Horário de Saída da Escola *</label>
+          <input type="time" id="form-ida" step="300" required>
+        </div>
+        <div class="form-group">
+          <label>Horário Previsto de Retorno</label>
+          <input type="time" id="form-volta" step="300" placeholder="Opcional">
+          <small style="font-size:.65rem; color:var(--texto-muted); display:block; margin-top:4px;">Ajuda a empresa a planejar a escala do dia.</small>
+        </div>
+      </div>
+
+      <!-- Detalhes condicionais (CAUIM / texto / outros) -->
+      <div class="form-row" id="div-detalhes"
+        style="display:none; background:var(--azul-claro); padding:14px; border-radius:12px; border:1px solid var(--borda);">
+        <div class="form-group" id="grupo-filme-cauim" style="display:none; width:100%;">
+          <label style="color:var(--primary);">Filme Escolhido (CAUIM) *</label>
+          <select id="form-filme-select"><option value="">Carregando filmes...</option></select>
+        </div>
+        <div class="form-group" id="grupo-detalhe-texto" style="display:none; width:100%;">
+          <label style="color:var(--primary);">Detalhe da Atividade</label>
+          <input type="text" id="form-detalhe" placeholder="Ex: Peça Teatral X, Exposição Y">
+        </div>
+        <div class="form-group" id="grupo-titulo-outros" style="display:none; width:100%;">
+          <label style="color:var(--primary);">Qual é o Evento? *</label>
+          <input type="text" id="form-titulo-outros" placeholder="Digite o nome do seu evento">
+        </div>
+      </div>
+
+      <!-- Responsável + Telefone -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Professor(a) Responsável *</label>
+          <input type="text" id="form-resp" required placeholder="Nome de quem acompanhará os alunos">
+        </div>
+        <div class="form-group">
+          <label>Celular do Responsável *</label>
+          <input type="tel" id="form-tel" required placeholder="(00) 00000-0000" oninput="maskPhone(this)">
+        </div>
+      </div>
+
+      <!-- Turmas + Total passageiros -->
+      <div class="form-row">
+        <div class="form-group" style="flex:3;">
+          <label>Selecione as Turmas *</label>
+          <div id="box-turmas"
+            style="border:1.5px solid var(--borda); padding:10px; border-radius:10px;
+                   max-height:200px; overflow-y:auto; background:var(--input-bg);">
+            <small style="color:var(--texto-muted);">Aguarde...</small>
+          </div>
+          <input type="text" id="form-turmas" required
+            style="opacity:0; position:absolute; height:0; width:0; z-index:-1;">
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label>Total de Passageiros *</label>
+          <input type="number" id="form-qtd" required placeholder="Ex: 45"
+            oninput="calcularLotacaoTempoReal()">
+          <div id="aviso-lotacao" style="display:none; margin-top:8px; font-size:.72rem;
+            padding:8px 12px; border-radius:9px; line-height:1.4; border:1px solid var(--borda);
+            font-weight:700;"></div>
+        </div>
+      </div>
+
+      <!-- Acessibilidade -->
+      <div class="form-row">
+        <div class="form-group checkbox-group" style="flex:2;">
+          <input type="checkbox" id="form-acess"
+            style="width:20px; height:20px; cursor:pointer;"
+            onchange="toggleQtdAdaptado()">
+          <label for="form-acess" style="margin:0; cursor:pointer; font-weight:800; font-size:.82rem;">
+            Necessita de Transporte Adaptado (Cadeirante)
+          </label>
+        </div>
+        <div class="form-group" id="grupo-qtd-adaptado" style="display:none; flex:1;">
+          <label>Qtd. Cadeirantes *</label>
+          <input type="number" id="form-qtd-adaptado" placeholder="Quantos passageiros?">
+        </div>
+      </div>
+
+      <!-- Observações (condicional para "Outros") -->
+      <div class="form-row" id="grupo-obs" style="display:none;">
+        <div class="form-group" style="width:100%;">
+          <label>Observações Adicionais *</label>
+          <textarea id="form-obs" rows="3"
+            placeholder="Detalhes importantes para o motorista ou para a secretaria..."></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btn-salvar">
+        Enviar Solicitação de Transporte
+      </button>
+    </form>
+  </div>
+</div>
+<!-- ══════════════════════════════════════════════════
+         MODAIS
+    ══════════════════════════════════════════════════ -->
+
+    <!-- AVALIAR PEDIDO -->
+    <div id="modal-admin" class="modal-overlay">
+      <div class="modal-content" style="max-width:600px;">
+        <button class="close-btn" onclick="fecharModal('modal-admin')">&times;</button>
+        <h3 class="modal-title">📋 Avaliar Solicitação</h3>
+        <input type="hidden" id="admin-id-linhas">
+
+        <div class="detalhe-box">
+          <p><strong>Unidade:</strong> <span id="view-und"></span></p>
+          <p><strong>Evento:</strong> <span id="view-evento"></span></p>
+          <p><strong>Rota:</strong> <span id="view-rota"></span></p>
+          <p><strong>Data/Hora:</strong> <span id="view-data"></span></p>
+          <p><strong>Responsável:</strong> <span id="view-resp"></span></p>
+          <p><strong>Turmas:</strong> <span id="view-turmas"></span></p>
+          <p><strong>Acessibilidade:</strong> <span id="view-acess"></span></p>
+          <p><strong>Obs:</strong> <span id="view-obs"></span></p>
+        </div>
+
+        <div id="grupo-justificativa" style="display:none; margin-bottom:14px; animation:fadeIn .3s;">
+          <label style="font-weight:800; color:var(--vermelho); font-size:.72rem; text-transform:uppercase; letter-spacing:.05em;">Motivo da Recusa (Obrigatório) *</label>
+          <textarea id="admin-justificativa" rows="3" placeholder="Informe por que a solicitação não pôde ser atendida..." style="width:100%; margin-top:6px;"></textarea>
+        </div>
+
+        <div class="painel-frota">
+          <span class="painel-frota-icon">🚌</span>
+          <div>
+            <div class="painel-frota-title">Planejamento de Frota</div>
+            <div id="texto-necessidade-onibus" class="painel-frota-val"></div>
+            <div class="painel-frota-note">* Capacidade calculada para garantir assento a todos e presença de um responsável por veículo.</div>
+          </div>
+        </div>
+
+        <input type="hidden" id="admin-placa" value="">
+
+        <div class="d-flex gap-3 mt-3">
+          <button type="button" class="btn-submit" id="btn-aprovar-admin"
+            style="background:var(--verde); border-color:var(--verde); color:#fff; flex:1; margin-top:0;"
+            onclick="enviarAvaliacaoAdmin('Aprovado (Na Rota)')">✅ Aprovar Pedido</button>
+          <button type="button" class="btn-danger" id="btn-recusar-admin"
+            style="padding:11px 20px; font-size:.88rem; border-radius:11px; flex:1; font-weight:900;"
+            onclick="enviarAvaliacaoAdmin('Recusado')">❌ Recusar Pedido</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESPACHO EMPRESA -->
+    <div id="modal-despacho-empresa" class="modal-overlay">
+      <div class="modal-content" style="max-width:600px;">
+        <button class="close-btn" onclick="fecharModal('modal-despacho-empresa')">&times;</button>
+        <h3 class="modal-title">🚌 Alocar Frota e Motoristas</h3>
+
+        <div class="detalhe-box">
+          <p><strong>Evento:</strong> <span id="desp-view-evento"></span></p>
+          <p><strong>Escola:</strong> <span id="desp-view-escola"></span> (<span id="desp-view-alunos"></span> passageiros)</p>
+          <p><strong>Rota:</strong> <span id="desp-view-rota"></span></p>
+          <p><strong>Saída:</strong> <span id="desp-view-saida"></span></p>
+          <p style="color:var(--vermelho); font-weight:900; margin-top:8px;">📌 Necessário: <span id="desp-view-qtd"></span> ônibus</p>
+        </div>
+
+        <div id="container-selecao-despacho" style="max-height:40vh; overflow-y:auto; padding-right:5px;"></div>
+
+        <input type="hidden" id="desp-id-linhas">
+        <input type="hidden" id="desp-qtd-necessaria">
+
+        <button id="btn-confirmar-despacho" class="btn-submit"
+          style="margin-top:16px; background:var(--verde); border-color:var(--verde); color:#fff;"
+          onclick="confirmarDespachoModal()">
+          ✅ Confirmar Escala Total
+        </button>
+      </div>
+    </div>
+
+    <!-- CANCELAMENTO -->
+    <div id="modal-cancelamento" class="modal-overlay">
+      <div class="modal-content" style="max-width:420px; text-align:center;">
+        <button class="close-btn" onclick="fecharModal('modal-cancelamento')">&times;</button>
+        <h3 class="modal-title" style="color:var(--vermelho); justify-content:center;">Cancelar Pedido</h3>
+        <p style="font-size:.82rem; color:var(--texto-muted); margin-bottom:18px;">Por favor, informe o motivo do cancelamento. Essa ação registrará no histórico.</p>
+        <input type="hidden" id="cancel-id-linhas">
+        <div class="form-group" style="margin-bottom:14px; text-align:left;">
+          <label>Justificativa</label>
+          <textarea id="cancel-justificativa" rows="3" placeholder="Motivo..." required></textarea>
+        </div>
+        <button class="btn-danger" style="width:100%; padding:12px; font-size:.9rem; font-weight:900; border-radius:11px;" onclick="confirmarCancelamento()">
+          Confirmar Cancelamento
+        </button>
+      </div>
+    </div>
+
+    <!-- DETALHES DO CARD -->
+    <div id="modal-detalhes-card" class="modal-overlay">
+      <div class="modal-content" style="max-width:600px;">
+        <button class="close-btn" onclick="fecharModal('modal-detalhes-card')">&times;</button>
+        <h3 class="modal-title">📄 Detalhes da Solicitação</h3>
+        <div class="detalhe-box" style="line-height:1.8;">
+          <p>🏛️ <strong>Unidade:</strong> <span id="det-und"></span></p>
+          <p>📅 <strong>Evento:</strong> <span id="det-evento"></span></p>
+          <p>📍 <strong>Trajeto:</strong> <span id="det-rota"></span></p>
+          <p>🕒 <strong>Data e Hora:</strong> <span id="det-data"></span></p>
+          <hr style="border:0; border-top:1px dashed var(--borda); margin:8px 0;">
+          <p>👩‍🏫 <strong>Prof. Responsável:</strong> <span id="det-resp"></span></p>
+          <p>📞 <strong>Contato:</strong> <span id="det-tel"></span></p>
+          <p>👨‍💻 <strong>Solicitado por:</strong> <span id="det-criado-por"></span> em <span id="det-data-sol"></span></p>
+          <hr style="border:0; border-top:1px dashed var(--borda); margin:8px 0;">
+          <p>🚌 <strong>Veículo (Placa):</strong> <span id="det-placa"></span></p>
+          <p>🧑‍✈️ <strong>Motorista:</strong> <span id="det-motorista"></span></p>
+          <hr style="border:0; border-top:1px dashed var(--borda); margin:8px 0;">
+          <p style="margin-bottom:4px;"><strong>Status:</strong> <span id="det-status" style="padding:3px 10px; border-radius:8px; font-weight:900;"></span></p>
+        </div>
+        <div class="label-mini mb-1" style="font-size:.65rem; font-weight:900; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.06em;">Histórico</div>
+        <div id="det-historico-box" class="historico-box"></div>
+      </div>
+    </div>
+
+    <!-- VEÍCULO -->
+    <div id="modal-veiculo" class="modal-overlay">
+      <div class="modal-content" style="max-width:520px;">
+        <button class="close-btn" onclick="fecharModal('modal-veiculo')">&times;</button>
+        <h3 class="modal-title">🚐 Cadastrar / Editar Veículo</h3>
+        <form id="formVeiculo" onsubmit="enviarVeiculo(event)">
+          <input type="hidden" id="v-data">
+          <input type="hidden" id="v-id-linha">
+          <div class="form-row">
+            <div class="form-group" style="flex:2"><label>Empresa Parceira</label><input type="text" id="v-empresa" required></div>
+            <div class="form-group" style="flex:1"><label>Placa</label><input type="text" id="v-placa" required></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Tipo (Ex: Ônibus, Van)</label><input type="text" id="v-veiculo" required></div>
+            <div class="form-group"><label>Lotação (Vagas)</label><input type="number" id="v-lotacao" required></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Acessível (Elevador)?</label><select id="v-acessibilidade"><option value="Não">Não</option><option value="Sim">Sim</option></select></div>
+            <div class="form-group"><label>Status</label><select id="v-disponibilidade"><option value="Disponível">Disponível</option><option value="Em Rota">Em Rota</option><option value="Manutenção">Manutenção</option></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="width:100%">
+              <label>Motorista Vinculado</label>
+              <select id="v-motorista" style="width:100%"><option value="">Nenhum / Não Cadastrado</option></select>
+            </div>
+          </div>
+          <button type="submit" class="btn-submit" id="btn-salvar-veiculo">Salvar Veículo</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- MOTORISTA -->
+    <div id="modal-motorista" class="modal-overlay">
+      <div class="modal-content" style="max-width:420px;">
+        <button class="close-btn" onclick="fecharModal('modal-motorista')">&times;</button>
+        <h3 class="modal-title">🧑‍✈️ Cadastrar / Editar Motorista</h3>
+        <form id="formMotorista" onsubmit="salvarMotorista(event)">
+          <input type="hidden" id="mot-id-linha">
+          <div class="form-group" style="margin-bottom:10px;"><label>Empresa</label><input type="text" id="mot-empresa" required></div>
+          <div class="form-group" style="margin-bottom:10px;"><label>Nome Completo</label><input type="text" id="mot-nome" required></div>
+          <div class="form-group" style="margin-bottom:10px;"><label>Contato (Telefone)</label><input type="text" id="mot-contato" oninput="maskPhone(this)" required></div>
+          <div class="form-group" style="margin-bottom:14px;"><label>Status</label><select id="mot-status"><option value="Ativo">Ativo</option><option value="Inativo">Inativo</option></select></div>
+          <button type="submit" class="btn-submit" id="btn-salvar-motorista">Salvar Motorista</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- SIMULAR ESCOLA -->
+    <div id="modal-simular-escola" class="modal-overlay" style="z-index:999999;">
+      <div class="modal-content" style="max-width:420px; text-align:center;">
+        <button class="close-btn" onclick="fecharModal('modal-simular-escola')">&times;</button>
+        <h3 class="modal-title" style="justify-content:center;">👁️ Simular Visão da Escola</h3>
+        <p style="font-size:.82rem; color:var(--texto-muted); margin-bottom:18px;">Selecione a unidade que deseja visualizar:</p>
+        <select id="select-escola-simulacao" style="width:100%; margin-bottom:18px;"></select>
+        <button class="btn-submit" style="background:var(--verde); border-color:var(--verde); color:#fff; margin-top:0;" onclick="confirmarSimulacaoEscola()">
+          Iniciar Simulação
+        </button>
+      </div>
+    </div>
+
+    <!-- MÍDIA DO EVENTO -->
+    <div id="modal-midia-evento" class="modal-overlay">
+      <div class="modal-content" style="max-width:720px;">
+        <button class="close-btn" onclick="fecharModal('modal-midia-evento')">&times;</button>
+        <h3 class="modal-title">🖼️ Personalizar Pré-Cadastro</h3>
+        <form id="formMidia" onsubmit="salvarMidia(event)">
+          <input type="hidden" id="admin-midia-linha">
+          <div class="form-group" style="margin-bottom:14px;"><label>Evento *</label><select id="m-evento" required></select></div>
+          <div class="form-group" style="margin-bottom:14px;"><label>URL da Imagem</label><input type="url" id="m-img" placeholder="Ex: https://link-da-imagem.com/foto.jpg"></div>
+          <div class="form-group" style="margin-bottom:14px;"><label>Texto Descritivo</label><div id="editor-container" style="height:180px;"></div></div>
+          <div class="form-group" style="margin-bottom:18px; border-top:1px solid var(--borda); padding-top:14px;">
+            <label style="color:var(--laranja);">Anexos Adicionais</label>
+            <div id="container-links-midia" style="display:flex; flex-direction:column; gap:10px; margin-bottom:10px;"></div>
+            <button type="button" class="btn-submit" style="background:var(--azul-claro); color:var(--primary); border-color:var(--primary); margin-top:0; width:auto; font-size:.75rem;" onclick="adicionarCampoLinkMidia()">+ Adicionar Novo Arquivo</button>
+          </div>
+          <button type="submit" class="btn-submit" id="btn-salvar-midia">Salvar Layout</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- DETALHES DO EVENTO (CALENDÁRIO) -->
+    <div id="modal-detalhes-evento" class="modal-overlay">
+      <div class="modal-content" style="max-width:620px;">
+        <button class="close-btn" onclick="fecharModal('modal-detalhes-evento')">&times;</button>
+        <h3 id="detalhe-titulo-multiplo" class="modal-title">📅 Opções do Evento</h3>
+        <div id="container-midia-evento"></div>
+        <p style="font-size:.78rem; color:var(--texto-muted); margin-bottom:14px;">Selecione o horário desejado:</p>
+        <div id="lista-sub-eventos" style="display:flex; flex-direction:column; gap:14px; max-height:50vh; overflow-y:auto; padding-right:4px;"></div>
+      </div>
+    </div>
+
+    <!-- USUÁRIO -->
+    <div id="modal-usuario" class="modal-overlay">
+      <div class="modal-content" style="max-width:620px;">
+        <button class="close-btn" onclick="fecharModal('modal-usuario')">&times;</button>
+        <h3 class="modal-title">👥 Cadastrar / Editar Usuário</h3>
+        <form id="formUsuario" onsubmit="salvarUsuario(event)">
+          <input type="hidden" id="admin-usr-linha">
+          <div class="form-row">
+            <div class="form-group"><label>Unidade Escolar / Setor</label><input type="text" id="u-unidade" required></div>
+            <div class="form-group"><label>Função / Cargo</label><input type="text" id="u-funcao"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Nome Completo</label><input type="text" id="u-nome" required></div>
+            <div class="form-group"><label>E-mail (Conta Google)</label><input type="email" id="u-email" required></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Perfil de Acesso</label><select id="u-perfil" required><option value="Escola">Escola</option><option value="Empresa">Empresa</option><option value="Administrador">Administrador</option></select></div>
+            <div class="form-group"><label>Ativo?</label><select id="u-ativo"><option value="Sim">Sim</option><option value="Não">Não</option></select></div>
+          </div>
+          <button type="submit" class="btn-submit" id="btn-salvar-usr">Salvar Usuário</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- AGENDA DINÂMICA -->
+    <div id="modal-agenda-dinamica" class="modal-overlay">
+      <div class="modal-content" style="max-width:620px;">
+        <button class="close-btn" onclick="fecharModal('modal-agenda-dinamica')">&times;</button>
+        <h3 class="modal-title">📅 Adicionar / Editar Item</h3>
+        <form id="formAgendaDinamica" onsubmit="salvarEstruturaDinamica(event)">
+          <input type="hidden" id="dinamico-nome-aba">
+          <input type="hidden" id="dinamico-id-linha">
+          <div id="dinamico-form-inputs" style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;"></div>
+          <button type="submit" class="btn-submit" id="btn-salvar-dyn">Salvar Item</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- CONFIGURAÇÃO -->
+    <div id="modal-config" class="modal-overlay">
+      <div class="modal-content" style="max-width:620px;">
+        <button class="close-btn" onclick="fecharModal('modal-config')">&times;</button>
+        <h3 class="modal-title">⚙️ Nova Regra / Variável</h3>
+        <form id="formConfig" onsubmit="salvarConfig(event)">
+          <input type="hidden" id="admin-cfg-linha">
+          <div class="form-group" style="margin-bottom:13px;"><label>Chave</label><input type="text" id="cfg-chave" required></div>
+          <div class="form-group" style="margin-bottom:13px;"><label>Valor da Regra</label><input type="text" id="cfg-valor" required></div>
+          <div class="form-group" style="margin-bottom:13px;"><label>Descrição</label><textarea id="cfg-desc" rows="3" style="width:100%;"></textarea></div>
+          <button type="submit" class="btn-submit" id="btn-salvar-cfg">Salvar Regra</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- RESERVA DE FROTA -->
+    <div id="modal-reserva" class="modal-overlay">
+      <div class="modal-content" style="max-width:420px;">
+        <button class="close-btn" onclick="fecharModal('modal-reserva')">&times;</button>
+        <h3 class="modal-title">🔒 Bloquear Frota</h3>
+        <form id="formReserva" onsubmit="salvarReserva(event)">
+          <input type="hidden" id="res-id">
+          <div class="form-group" style="margin-bottom:10px;">
+            <label>Datas Selecionadas (Múltiplas)</label>
+            <div id="res-container-datas" style="display:flex; flex-wrap:wrap; gap:5px; padding:10px; background:var(--azul-claro); border-radius:10px; min-height:38px; border:1px solid var(--borda);">
+              <small style="opacity:.6;">Clique nos dias do calendário para adicionar...</small>
+            </div>
+            <input type="hidden" id="res-datas-json" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:1;"><label>Período</label><select id="res-periodo" required><option value="Manhã">Manhã</option><option value="Tarde">Tarde</option><option value="Integral">Integral</option></select></div>
+            <div class="form-group" style="flex:1;"><label>Qtd. Ônibus/Dia</label><input type="number" id="res-qtd" min="1" value="1" required></div>
+          </div>
+          <div class="form-group" style="margin-bottom:10px;">
+            <label>Evento / Motivo</label>
+            <select id="res-evento-select" onchange="toggleOutrosReserva()" required></select>
+          </div>
+          <div class="form-group" id="res-grupo-outros" style="display:none; margin-bottom:10px;">
+            <label>Especifique o Evento *</label>
+            <input type="text" id="res-evento-outro" placeholder="Digite o nome do evento">
+          </div>
+          <div class="form-group" style="margin-bottom:10px;">
+            <label>Data Limite de Liberação (Expiração)</label>
+            <small style="display:block; color:var(--texto-muted); margin-bottom:4px; font-size:.65rem;">A reserva cairá automaticamente após este dia.</small>
+            <input type="date" id="res-expira" required>
+          </div>
+          <button type="submit" id="btn-salvar-reserva" class="btn-submit" style="background:var(--verde); border-color:var(--verde); color:#fff;">
+            🔒 Salvar Reserva
+          </button>
+        </form>
+      </div>
+    </div>
+
+
+    <!-- MODAL: EXCEÇÃO DE DISPONIBILIDADE DE FROTA -->
+    <div id="modal-frota-data" class="modal-overlay">
+      <div class="modal-content" style="max-width:500px;">
+        <button class="close-btn" onclick="fecharModal('modal-frota-data')">&times;</button>
+        <h3 class="modal-title">🗓️ Configurar Disponibilidade de Frota</h3>
+        <div style="background:var(--azul-claro); border-radius:10px; padding:10px 14px; margin-bottom:16px; font-size:.75rem; font-weight:700; color:var(--primary);">
+          Configure exceções ao padrão de <strong id="modal-frota-padrao-txt">0</strong> ônibus. Ex: semana de manutenção, feriado regional, evento da prefeitura.
+        </div>
+        <form onsubmit="salvarExcecaoFrota(event)">
+          <input type="hidden" id="fd-id">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Data Início *</label>
+              <input type="date" id="fd-inicio" required>
+            </div>
+            <div class="form-group">
+              <label>Data Fim *</label>
+              <input type="date" id="fd-fim" required>
+              <small style="font-size:.65rem; color:var(--texto-muted); display:block; margin-top:3px;">Para data única, repita a mesma data.</small>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Período Afetado *</label>
+              <select id="fd-periodo" required>
+                <option value="Integral">Integral (Manhã e Tarde)</option>
+                <option value="Manhã">Somente Manhã</option>
+                <option value="Tarde">Somente Tarde</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Ônibus Disponíveis *</label>
+              <input type="number" id="fd-qtd" min="0" required placeholder="Ex: 5">
+              <small style="font-size:.65rem; color:var(--texto-muted); display:block; margin-top:3px;">0 = nenhum ônibus disponível.</small>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:16px;">
+            <label>Motivo / Observação</label>
+            <input type="text" id="fd-motivo" placeholder="Ex: Manutenção programada de 3 veículos, Feriado regional...">
+          </div>
+          <button type="submit" class="btn-submit" style="background:var(--verde); border-color:var(--verde); color:#fff;">
+            💾 Salvar Disponibilidade
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

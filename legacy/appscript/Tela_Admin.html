@@ -1,0 +1,391 @@
+<div id="tela-admin" class="tela">
+
+  <!-- SIDEBAR LATERAL -->
+  <nav class="admin-sidebar" id="admin-sidebar" aria-label="Menu de administração">
+    <button class="admin-sidebar-toggle" onclick="toggleAdminSidebar()" title="Expandir/recolher menu" aria-label="Expandir menu">
+      ☰
+    </button>
+
+    <button class="admin-sb-item ativo" onclick="mudarAbaAdmin('pedidos')" title="Gestão de Pedidos">
+      <span class="sb-icon">📋</span>
+      <span class="sb-txt">Gestão de Pedidos</span>
+    </button>
+
+    <button class="admin-sb-item" onclick="mudarAbaAdmin('veiculos')" title="Frota e Motoristas">
+      <span class="sb-icon">🚌</span>
+      <span class="sb-txt">Frota e Motoristas</span>
+    </button>
+
+    <button class="admin-sb-item" onclick="mudarAbaAdmin('frota-datas')" title="Disponibilidade de Frota">
+      <span class="sb-icon">🗓️</span>
+      <span class="sb-txt">Disponib. de Frota</span>
+    </button>
+
+    <button class="admin-sb-item" onclick="mudarAbaAdmin('usuarios')" title="Usuários">
+      <span class="sb-icon">👥</span>
+      <span class="sb-txt">Usuários</span>
+    </button>
+
+    <div class="admin-sb-separador"></div>
+
+    <button class="admin-sb-item" onclick="mudarAbaAdmin('programacoes')" title="Programações">
+      <span class="sb-icon">🎬</span>
+      <span class="sb-txt">Programações</span>
+    </button>
+
+    <button class="admin-sb-item" onclick="mudarAbaAdmin('agendas')" title="Agendas">
+      <span class="sb-icon">📅</span>
+      <span class="sb-txt">Agendas</span>
+    </button>
+
+    <button class="admin-sb-item" onclick="mudarAbaAdmin('midia')" title="Layout Pré-Cadastro">
+      <span class="sb-icon">🖼️</span>
+      <span class="sb-txt">Layout / Mídia</span>
+    </button>
+
+    <div class="admin-sb-separador"></div>
+
+    <button class="admin-sb-item" onclick="mudarAbaAdmin('configuracoes')" title="Configurações">
+      <span class="sb-icon">⚙️</span>
+      <span class="sb-txt">Configurações</span>
+    </button>
+
+    <button class="admin-sb-item" onclick="mudarAbaAdmin('reservas')" title="Reservas de Frota">
+      <span class="sb-icon">🔒</span>
+      <span class="sb-txt">Reservas de Frota</span>
+    </button>
+  </nav>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <div class="admin-content">
+
+    <!-- ── ABA: GESTÃO DE PEDIDOS ───────────────────── -->
+    <div id="admin-aba-pedidos" class="aba-admin ativa">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">📋 Gestão de Pedidos</h3>
+
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-4">
+          <div class="card-kpi" style="color:var(--primary);">
+            <div class="kpi-val" id="dash-analise">0</div>
+            <div class="kpi-label">Em Análise</div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-4">
+          <div class="card-kpi" style="color:var(--verde);">
+            <div class="kpi-val" id="dash-aprovados">0</div>
+            <div class="kpi-label">Aprovados</div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-4">
+          <div class="card-kpi" style="color:var(--vermelho);">
+            <div class="kpi-val" id="dash-recusados">0</div>
+            <div class="kpi-label">Recusados / Cancelados</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filtros-avancados mb-4">
+        <div class="form-group" style="flex:2; min-width:220px;">
+          <label>Pesquisa Rápida</label>
+          <input type="text" id="filtro-admin" placeholder="Pesquisar unidade, evento, status..." onkeyup="filtrarTabelaAdmin()">
+        </div>
+        <div class="form-group">
+          <label>Data</label>
+          <input type="date" id="filtro-data" onchange="filtrarTabelaAdmin()">
+        </div>
+        <div class="form-group">
+          <label>Período</label>
+          <select id="filtro-periodo" onchange="filtrarTabelaAdmin()"><option value="">Todos</option></select>
+        </div>
+        <div class="form-group">
+          <label>Unidade Escolar</label>
+          <select id="filtro-unidade" onchange="filtrarTabelaAdmin()"><option value="">Todas</option></select>
+        </div>
+        <div class="form-group">
+          <label>Evento / Destino</label>
+          <select id="filtro-evento" onchange="filtrarTabelaAdmin()"><option value="">Todos</option></select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="filtro-status" onchange="filtrarTabelaAdmin()"><option value="">Todos</option></select>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Data / Período</th>
+                <th>Unidade Escolar</th>
+                <th>Evento / Destino</th>
+                <th>Passageiros</th>
+                <th>Status</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-admin-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ABA: FROTA E MOTORISTAS ──────────────────── -->
+    <div id="admin-aba-veiculos" class="aba-admin">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">🚌 Frota e Motoristas</h3>
+
+      <div class="subtabs-container mb-4">
+        <button class="btn-subtab ativo" onclick="mudarSubAbaFrotaAdmin('veiculos')">🚐 Frota Escolar</button>
+        <button class="btn-subtab" onclick="mudarSubAbaFrotaAdmin('motoristas')">🧑‍✈️ Motoristas</button>
+      </div>
+
+      <div id="frota-veiculos-admin" class="subaba-frota-admin ativa">
+        <div class="filtros-avancados mb-4">
+          <div class="form-group" style="flex:2; min-width:200px;">
+            <label>Buscar Veículo, Placa ou Motorista</label>
+            <input type="text" id="filtro-v-busca" placeholder="Pesquisar..." onkeyup="filtrarVeiculos()">
+          </div>
+          <div class="form-group"><label>Empresa Parceira</label><select id="filtro-v-empresa" onchange="filtrarVeiculos()"><option value="">Todas</option></select></div>
+          <div class="form-group"><label>Tipo</label><select id="filtro-v-tipo" onchange="filtrarVeiculos()"><option value="">Todos</option></select></div>
+          <div class="form-group"><label>Lotação</label><select id="filtro-v-lotacao" onchange="filtrarVeiculos()"><option value="">Todas</option></select></div>
+          <div class="form-group"><label>Disponibilidade</label><select id="filtro-v-disp" onchange="filtrarVeiculos()"><option value="">Todas</option></select></div>
+          <div style="align-self:flex-end;">
+            <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="abrirModalVeiculo()">
+              ➕ Novo Veículo
+            </button>
+          </div>
+        </div>
+        <div id="loading-veiculos" class="loader">Lendo veículos do sistema...</div>
+        <div id="lista-veiculos" class="grid-cards"></div>
+      </div>
+
+      <div id="frota-motoristas-admin" class="subaba-frota-admin">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+          <h4 style="margin:0; color:var(--primary); font-weight:900;">Motoristas Cadastrados</h4>
+          <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="abrirModalMotorista()">
+            ➕ Cadastrar Motorista
+          </button>
+        </div>
+        <div id="loading-motoristas" class="loader">Lendo motoristas...</div>
+        <div id="lista-motoristas-admin" class="grid-cards"></div>
+      </div>
+    </div>
+
+    <!-- ── ABA: DISPONIBILIDADE DE FROTA POR DATA ──── -->
+    <div id="admin-aba-frota-datas" class="aba-admin">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">🗓️ Disponibilidade de Frota</h3>
+
+      <div style="background:var(--azul-claro); color:var(--primary); padding:12px 16px; border-left:4px solid var(--primary); border-radius:12px; margin-bottom:20px; font-size:.8rem; font-weight:700;">
+        Configure os ônibus disponíveis por período. Padrão: <strong id="txt-frota-padrao">6 manhã + 6 tarde</strong>. Exceções por data sobrepõem o padrão.
+      </div>
+
+      <!-- Configuração do padrão -->
+      <div class="card mb-4" style="border-top-color:var(--primary);">
+        <div style="font-size:.8rem; font-weight:900; color:var(--primary); margin-bottom:14px;">⚙️ Frota Padrão por Período</div>
+        <div class="form-row" style="align-items:flex-end;">
+          <div class="form-group" style="flex:1; min-width:140px;">
+            <label>🌅 Ônibus — Manhã</label>
+            <input type="number" id="cfg-frota-manha" min="0" max="99" value="6" oninput="previewFrotaPadrao()">
+          </div>
+          <div class="form-group" style="flex:1; min-width:140px;">
+            <label>🌇 Ônibus — Tarde</label>
+            <input type="number" id="cfg-frota-tarde" min="0" max="99" value="6" oninput="previewFrotaPadrao()">
+          </div>
+          <div class="form-group" style="flex:1; min-width:140px;">
+            <label>📊 Total por dia</label>
+            <div id="preview-total-frota" style="padding:9px 12px; border:1.5px solid var(--borda); border-radius:10px; font-size:.88rem; font-weight:900; color:var(--primary); background:var(--azul-claro);">12 ônibus/dia</div>
+          </div>
+          <div style="align-self:flex-end; flex-shrink:0;">
+            <button class="btn-submit" style="width:auto; margin:0; padding:9px 18px; font-size:.78rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="salvarFrotaPadrao()">
+              💾 Salvar Padrão
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-sm-3">
+          <div class="card-kpi" style="color:var(--primary);">
+            <div class="kpi-val" id="kpi-frota-padrao">6M+6T</div>
+            <div class="kpi-label">Frota Padrão</div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-3">
+          <div class="card-kpi" style="color:var(--verde);">
+            <div class="kpi-val" id="kpi-frota-excecoes">0</div>
+            <div class="kpi-label">Exceções Ativas</div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-3">
+          <div class="card-kpi" style="color:var(--laranja);">
+            <div class="kpi-val" id="kpi-frota-hoje">0</div>
+            <div class="kpi-label">Disponíveis Hoje (manhã)</div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-3">
+          <div class="card-kpi" style="color:var(--roxo);">
+            <div class="kpi-val" id="kpi-frota-semana">0</div>
+            <div class="kpi-label">Menor (próx. 7 dias)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ações + Visualização -->
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <h4 style="margin:0; color:var(--primary); font-weight:900;">Exceções de Disponibilidade</h4>
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--laranja); border-color:var(--laranja); color:#fff;" onclick="abrirModalFrotaData()">
+            ➕ Nova Exceção
+          </button>
+          <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--roxo); border-color:var(--roxo); color:#fff;" onclick="limparExcecoesExpiradas()">
+            🧹 Limpar Expiradas
+          </button>
+        </div>
+      </div>
+
+      <div class="card mb-4" style="border-top-color:var(--primary);">
+        <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+          <div style="font-size:.8rem; font-weight:900; color:var(--primary);">📊 Visualização mensal</div>
+          <button class="btn-subtab" onclick="mudarMesFrota(-1)">◀</button>
+          <span id="frota-mes-titulo" style="font-size:.88rem; font-weight:900; color:var(--primary);">Mês Atual</span>
+          <button class="btn-subtab" onclick="mudarMesFrota(1)">▶</button>
+          <div class="d-flex align-items-center gap-3 ms-auto" style="font-size:.68rem; font-weight:800; flex-wrap:wrap;">
+            <span><span style="display:inline-block;width:10px;height:10px;background:#d4edda;border-radius:2px;margin-right:3px;"></span>Plena</span>
+            <span><span style="display:inline-block;width:10px;height:10px;background:#fff3cd;border-radius:2px;margin-right:3px;"></span>Reduzida</span>
+            <span><span style="display:inline-block;width:10px;height:10px;background:#fde8e8;border-radius:2px;margin-right:3px;"></span>Sem frota</span>
+            <span><span style="display:inline-block;width:10px;height:10px;background:var(--input-disabled);border-radius:2px;margin-right:3px;"></span>Fim de semana</span>
+          </div>
+        </div>
+        <div id="grade-frota-mes" style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; font-size:.65rem;"></div>
+      </div>
+
+      <div class="table-container">
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Data Início</th>
+                <th>Data Fim</th>
+                <th>Período</th>
+                <th>Ônibus Disponíveis</th>
+                <th>Motivo</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-frota-datas-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ABA: USUÁRIOS ────────────────────────────── -->
+    <div id="admin-aba-usuarios" class="aba-admin">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">👥 Usuários</h3>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <span></span>
+        <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="abrirModalUsuario()">
+          ➕ Novo Usuário
+        </button>
+      </div>
+      <div class="filtros-avancados mb-4">
+        <div class="form-group" style="flex:2; min-width:200px;"><label>Buscar Nome ou E-mail</label><input type="text" id="filtro-u-busca" placeholder="Pesquisar..." onkeyup="filtrarUsuarios()"></div>
+        <div class="form-group"><label>Unidade / Escola</label><select id="filtro-u-und" onchange="filtrarUsuarios()"><option value="">Todas</option></select></div>
+        <div class="form-group"><label>Perfil</label><select id="filtro-u-perfil" onchange="filtrarUsuarios()"><option value="">Todos</option></select></div>
+        <div class="form-group"><label>Status</label><select id="filtro-u-status" onchange="filtrarUsuarios()"><option value="">Todos</option></select></div>
+      </div>
+      <div class="table-container">
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Unidade/Escola</th><th>Função</th><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Ativo</th><th>Ações</th></tr></thead>
+            <tbody id="tabela-usuarios-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ABA: PROGRAMAÇÕES ─────────────────────────── -->
+    <div id="admin-aba-programacoes" class="aba-admin">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">🎬 Programações</h3>
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div class="subtabs-container" id="nav-pilulas-programacoes" style="margin:0;"></div>
+        <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--laranja); border-color:var(--laranja); color:#fff;" onclick="abrirModalCriarEstrutura('Programacao')">➕ Novo Catálogo</button>
+      </div>
+      <div id="container-programacoes-dinamicas"></div>
+    </div>
+
+    <!-- ── ABA: AGENDAS ──────────────────────────────── -->
+    <div id="admin-aba-agendas" class="aba-admin">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">📅 Agendas</h3>
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div class="subtabs-container" id="nav-pilulas-agendas" style="margin:0;"></div>
+        <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--laranja); border-color:var(--laranja); color:#fff;" onclick="abrirModalCriarEstrutura('Agenda')">➕ Nova Agenda</button>
+      </div>
+      <div id="container-agendas-dinamicas"></div>
+    </div>
+
+    <!-- ── ABA: LAYOUT PRÉ-CADASTRO ─────────────────── -->
+    <div id="admin-aba-midia" class="aba-admin">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">🖼️ Layout / Mídia</h3>
+      <div style="background:var(--azul-claro); color:var(--primary); padding:12px 16px; border-left:4px solid var(--primary); border-radius:12px; margin-bottom:20px; font-size:.8rem; font-weight:700;">
+        🖼️ <strong>CMS:</strong> Insira foto, texto e links para cada evento da agenda.
+      </div>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <span></span>
+        <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="abrirModalMidia()">➕ Personalizar Pré-Cadastro</button>
+      </div>
+      <div class="table-container">
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Evento (Agenda)</th><th>Tem Imagem?</th><th>Descrição / Texto</th><th>Anexos Extras</th><th>Ações</th></tr></thead>
+            <tbody id="tabela-midia-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ABA: CONFIGURAÇÕES ────────────────────────── -->
+    <div id="admin-aba-configuracoes" class="aba-admin">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">⚙️ Configurações</h3>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <span></span>
+        <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="abrirModalConfig()">➕ Nova Regra</button>
+      </div>
+      <div class="filtros-avancados mb-4">
+        <div class="form-group" style="flex:1;"><label>Buscar Chave ou Descrição</label><input type="text" id="filtro-cfg-busca" placeholder="Pesquisar..." onkeyup="filtrarConfig()"></div>
+      </div>
+      <div class="table-container">
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>CHAVE</th><th>VALOR</th><th>DESCRIÇÃO</th><th>Ações</th></tr></thead>
+            <tbody id="tabela-config-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ABA: RESERVAS DE FROTA ────────────────────── -->
+    <div id="admin-aba-reservas" class="aba-admin">
+      <h3 style="margin:0 0 18px 0; color:var(--primary); font-weight:900; font-size:1rem;">🔒 Reservas de Frota</h3>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <span></span>
+        <button class="btn-submit" style="width:auto; margin:0; padding:9px 16px; font-size:.78rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="abrirModalReserva()">🔒 Nova Reserva Global</button>
+      </div>
+      <div class="card mb-4" style="border-top-color:var(--primary);">
+        <p style="margin:0 0 12px 0; font-size:.8rem; font-weight:900; color:var(--primary);">💡 Clique nos dias para selecionar datas do lote.</p>
+        <div id="cal-reserva-lote" class="cal-grid" style="grid-template-columns:repeat(7,1fr); font-size:.7rem;"></div>
+      </div>
+      <div class="table-container">
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Data Alvo</th><th>Período</th><th>Qtd Ônibus</th><th>Evento/Motivo</th><th>Expiração</th><th>Ações</th></tr></thead>
+            <tbody id="tabela-reservas-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /admin-content -->
+
+</div><!-- /tela-admin -->

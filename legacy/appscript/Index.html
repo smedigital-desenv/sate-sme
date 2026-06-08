@@ -1,0 +1,2081 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
+    <style>
+      /* ══════════════════════════════════════════════════
+         TOKENS MAPA
+      ══════════════════════════════════════════════════ */
+      :root {
+        --primary:       #002b5e;
+        --neon-blue:     #00e5ff;
+        --neon-green:    #39FF14;
+        --neon-yellow:   #FFD300;
+        --verde:         #28a745;
+        --laranja:       #fd7e14;
+        --vermelho:      #dc3545;
+        --roxo:          #6f42c1;
+
+        /* Superfícies */
+        --fundo:         #f0f4f8;
+        --card-bg:       #ffffff;
+        --input-bg:      #ffffff;
+        --input-disabled:#e9ecef;
+        --borda:         #dbe5ef;
+        --texto:         #0f172a;
+        --texto-muted:   #64748b;
+        --modal-overlay: rgba(0,0,0,0.72);
+
+        /* Atalhos temáticos */
+        --azul-claro:    #eff6ff;
+      }
+
+      /* Dark Mode */
+      body.dark-mode {
+        --primary:       #1a3a6a;
+        --neon-blue:     #4da3ff;
+        --fundo:         #121212;
+        --card-bg:       #1e1e1e;
+        --input-bg:      #2b2b2b;
+        --input-disabled:#3a3a3a;
+        --borda:         #444444;
+        --texto:         #f0f0f0;
+        --texto-muted:   #94a3b8;
+        --azul-claro:    #1a2a3a;
+        --modal-overlay: rgba(0,0,0,0.88);
+      }
+
+      *, *::before, *::after { box-sizing: border-box; }
+
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--fundo);
+        color: var(--texto);
+        margin: 0;
+        padding-bottom: 60px;
+        overflow-x: hidden;
+        transition: background-color .3s, color .3s;
+      }
+
+      /* ── NAVBAR MAPA ─────────────────────────────────── */
+      .nav-header {
+        background: var(--primary);
+        color: white;
+        border-bottom: 5px solid var(--neon-blue);
+        padding: 1rem 1.5rem;
+        position: sticky; top: 0; z-index: 1000;
+        box-shadow: 0 4px 20px rgba(0,43,94,.35);
+      }
+      .nav-brand-icon {
+        width: 42px; height: 42px; border-radius: 12px;
+        background: rgba(0,229,255,.12);
+        border: 1px solid rgba(0,229,255,.35);
+        display: grid; place-items: center;
+        color: var(--neon-blue); flex-shrink: 0;
+        font-size: 1.3rem;
+      }
+      .nav-brand-title { font-size: 1.05rem; font-weight: 900; letter-spacing: .03em; line-height: 1; }
+      .nav-brand-sub   { font-size: .6rem; color: rgba(255,255,255,.62); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+      .nav-user-badge  {
+        font-size: .7rem; font-weight: 800; color: rgba(255,255,255,.8);
+        background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16);
+        border-radius: 999px; padding: 4px 12px; white-space: nowrap;
+      }
+
+      /* Botões do header */
+      .nav-btn {
+        font-size: .75rem; font-weight: 800;
+        padding: 6px 14px; border-radius: 9px;
+        border: 2px solid transparent;
+        cursor: pointer; transition: .18s; white-space: nowrap;
+        display: inline-flex; align-items: center; gap: 5px;
+      }
+      .nav-btn-ghost  { background: rgba(255,255,255,.12); color: #fff; border-color: rgba(255,255,255,.22); }
+      .nav-btn-ghost:hover { background: rgba(255,255,255,.22); }
+      .nav-btn-primary { background: var(--primary); color: var(--neon-blue); border-color: var(--neon-blue); }
+      .nav-btn-primary:hover { background: var(--neon-blue); color: var(--primary); box-shadow: 0 0 14px rgba(0,229,255,.5); }
+      .nav-btn-verde   { background: var(--verde); color: #fff; }
+      .nav-btn-verde:hover { opacity: .88; }
+      .nav-btn-laranja { background: var(--laranja); color: #fff; }
+      .nav-btn-laranja:hover { opacity: .88; }
+      .nav-btn-roxo    { background: var(--roxo); color: #fff; }
+      .nav-btn-roxo:hover { opacity: .88; }
+      .nav-btn-danger  { background: var(--vermelho); color: #fff; }
+      .nav-btn-dark    { background: #1e293b; color: #fff; }
+
+      /* ── NAVEGAÇÃO POR ABAS DA NAV ───────────────────── */
+      .nav-tabs-mapa {
+        display: flex; gap: 4px; flex-wrap: wrap;
+        background: rgba(255,255,255,.06);
+        border: 1px solid rgba(0,229,255,.18);
+        border-radius: 12px; padding: 4px;
+      }
+      .nav-tabs-mapa input[type="radio"] { display: none; }
+      .nav-tabs-mapa label {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 6px 14px; border-radius: 9px;
+        font-size: .75rem; font-weight: 800;
+        color: rgba(255,255,255,.68);
+        cursor: pointer; transition: .18s; white-space: nowrap;
+        border: 2px solid transparent;
+      }
+      .nav-tabs-mapa input[type="radio"]:checked + label {
+        background: var(--neon-blue); color: var(--primary);
+        box-shadow: 0 0 14px rgba(0,229,255,.55);
+      }
+      .nav-tabs-mapa label:hover { background: rgba(0,229,255,.14); color: #fff; }
+
+      /* ── CONTAINER PRINCIPAL ─────────────────────────── */
+      .main-wrap { max-width: 1400px; margin: 28px auto; padding: 0 1.5rem; }
+
+      /* ── TELAS ───────────────────────────────────────── */
+      .tela { display: none; animation: fadeIn .3s; }
+      .tela.ativa { display: block; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+      /* ── TOAST ───────────────────────────────────────── */
+      #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999999; display: flex; flex-direction: column; gap: 10px; }
+      .toast {
+        padding: 13px 22px; border-radius: 12px; color: white;
+        font-weight: 800; font-size: .82rem;
+        opacity: 0; transform: translateX(100%); transition: all .28s ease;
+        box-shadow: 0 6px 18px rgba(0,0,0,.22); pointer-events: none;
+        border-left: 4px solid rgba(255,255,255,.4);
+      }
+      .toast.show { opacity: 1; transform: translateX(0); }
+      .toast.success { background-color: var(--verde); }
+      .toast.error   { background-color: var(--vermelho); }
+      .toast.warning { background-color: var(--laranja); }
+
+      /* ── MODAL ───────────────────────────────────────── */
+      .modal-overlay {
+        display: none; position: fixed; top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background-color: var(--modal-overlay);
+        z-index: 99999; justify-content: center; align-items: center;
+        padding: 12px; transition: .3s;
+      }
+      .modal-content {
+        background-color: var(--card-bg); color: var(--texto);
+        padding: 28px; border-radius: 18px;
+        width: 100%; max-width: 800px; max-height: 95vh;
+        overflow-y: auto; position: relative;
+        box-shadow: 0 20px 60px rgba(0,0,0,.45);
+        border: 1px solid var(--borda);
+        transition: background-color .3s, color .3s;
+      }
+      .modal-title {
+        color: var(--primary); font-weight: 900; font-size: 1rem;
+        margin: 0 0 16px 0; padding-bottom: 14px;
+        border-bottom: 2px solid var(--borda);
+        display: flex; align-items: center; gap: 8px;
+      }
+      .close-btn {
+        position: absolute; top: 14px; right: 18px;
+        font-size: 1.6rem; cursor: pointer; border: none;
+        background: transparent; color: var(--texto-muted);
+        line-height: 1; transition: .15s;
+      }
+      .close-btn:hover { color: var(--vermelho); }
+
+      /* ── CARDS KPI ───────────────────────────────────── */
+      .card-kpi {
+        background: var(--card-bg); border-radius: 14px;
+        padding: 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,.06);
+        border: 1px solid var(--borda);
+        border-top: 4px solid currentColor;
+        text-align: center; transition: .2s;
+      }
+      .card-kpi:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,.1); }
+      .card-kpi .kpi-val { font-size: 2rem; font-weight: 900; line-height: 1.1; }
+      .card-kpi .kpi-label { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--texto-muted); margin-top: 4px; }
+
+      /* ── CARD GENÉRICO ───────────────────────────────── */
+      .card {
+        background-color: var(--card-bg); color: var(--texto);
+        border-radius: 14px; padding: 18px;
+        border: 1px solid var(--borda);
+        border-top: 4px solid var(--primary);
+        box-shadow: 0 4px 12px rgba(0,0,0,.06);
+        transition: .2s;
+      }
+      .card:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,.1); }
+
+      /* ── GRID DE CARDS ───────────────────────────────── */
+      .grid-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+      @media (max-width: 1100px) { .grid-cards { grid-template-columns: repeat(2, 1fr); } }
+      @media (max-width: 600px)  { .grid-cards { grid-template-columns: 1fr; } }
+
+      /* ── FORMULÁRIO ──────────────────────────────────── */
+      .form-row { display: flex; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+      .form-group { flex: 1; min-width: 200px; display: flex; flex-direction: column; }
+      .form-group label { margin-bottom: 5px; font-weight: 800; font-size: .72rem; color: var(--texto-muted); text-transform: uppercase; letter-spacing: .05em; }
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        background-color: var(--input-bg); color: var(--texto);
+        padding: 9px 12px; border: 1.5px solid var(--borda);
+        border-radius: 10px; font-size: .85rem; font-weight: 600;
+        outline: none; transition: .2s; width: 100%;
+      }
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus { border-color: var(--neon-blue); box-shadow: 0 0 0 3px rgba(0,229,255,.15); }
+      .form-group input:disabled,
+      .form-group select:disabled { background-color: var(--input-disabled); cursor: not-allowed; border-color: transparent; }
+      .checkbox-group {
+        flex-direction: row !important; align-items: center; gap: 10px;
+        background-color: var(--azul-claro); padding: 10px 14px;
+        border-radius: 10px; border: 1px solid var(--borda);
+      }
+
+      /* ── TURMA ROW ───────────────────────────────────── */
+      .turma-row {
+        padding: 7px 10px; margin-bottom: 2px; border-radius: 8px;
+        display: flex; align-items: center; cursor: pointer; transition: .15s; width: 100%;
+      }
+      .turma-row:nth-child(odd) { background-color: var(--azul-claro); }
+      .turma-row:hover { filter: brightness(.95); }
+
+      /* ── BOTÃO PRINCIPAL ─────────────────────────────── */
+      .btn-submit {
+        background-color: var(--primary); color: var(--neon-blue);
+        border: 2px solid var(--neon-blue); padding: 11px 18px;
+        font-size: .88rem; font-weight: 900; border-radius: 11px;
+        cursor: pointer; width: 100%; margin-top: 10px; transition: .2s;
+        display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      }
+      .btn-submit:hover:not(:disabled) { background: var(--neon-blue); color: var(--primary); box-shadow: 0 0 18px rgba(0,229,255,.45); }
+      .btn-submit:disabled { opacity: .45; cursor: not-allowed; }
+
+      /* ── BOTÕES DE AÇÃO ──────────────────────────────── */
+      .btn-avaliar, .btn-editar, .btn-danger {
+        padding: 5px 10px; border-radius: 7px; cursor: pointer;
+        font-weight: 800; font-size: .7rem; transition: .18s;
+        border: none; margin-right: 6px;
+      }
+      .btn-avaliar { background: var(--laranja); color: #fff; }
+      .btn-editar  { background: var(--primary); color: var(--neon-blue); border: 1px solid var(--neon-blue); }
+      .btn-danger  { background: var(--vermelho); color: #fff; }
+      .btn-avaliar:hover, .btn-editar:hover, .btn-danger:hover { opacity: .82; transform: scale(1.03); }
+
+      /* ── LOADER ──────────────────────────────────────── */
+      .loader { text-align: center; font-size: .88rem; font-weight: 800; color: var(--texto-muted); padding: 40px; }
+
+      /* ── PAGINAÇÃO ───────────────────────────────────── */
+      .paginacao-container { display: none; justify-content: center; align-items: center; gap: 14px; margin-top: 28px; }
+      .btn-paginacao {
+        padding: 8px 18px; border: 1.5px solid var(--borda);
+        background: var(--card-bg); color: var(--primary);
+        border-radius: 9px; cursor: pointer; font-weight: 800; transition: .18s;
+      }
+      .btn-paginacao:hover:not(:disabled) { border-color: var(--neon-blue); }
+      .btn-toggle-view {
+        background: transparent; color: var(--primary);
+        border: 1.5px solid var(--primary); padding: 7px 14px;
+        border-radius: 9px; cursor: pointer; font-size: .75rem; font-weight: 800; transition: .18s;
+      }
+      .btn-toggle-view:hover { background: var(--primary); color: #fff; }
+
+      /* ── FILTROS AVANÇADOS ───────────────────────────── */
+      .filtros-avancados {
+        background: var(--card-bg); padding: 14px 18px; border-radius: 13px;
+        margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,.05);
+        display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
+        border-left: 4px solid var(--primary); border: 1px solid var(--borda);
+      }
+
+      /* ── TABELA ──────────────────────────────────────── */
+      .table-container { background: var(--card-bg); border-radius: 14px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,.06); border: 1px solid var(--borda); }
+      table { width: 100%; border-collapse: collapse; text-align: left; }
+      th {
+        background: var(--primary); color: #fff;
+        padding: 11px 14px; font-size: .7rem; font-weight: 900;
+        text-transform: uppercase; letter-spacing: .06em;
+      }
+      td { padding: 11px 14px; border-bottom: 1px solid var(--borda); font-size: .8rem; }
+      tbody tr:hover { background-color: var(--azul-claro); }
+
+      /* ── VARIÁVEL DE LARGURA DA SIDEBAR (controlada via JS) ── */
+      :root { --sb-w: 60px; }
+
+      /* ── LAYOUT ADMIN COM SIDEBAR FIXA ─────────────────── */
+      #tela-admin { display: none; }
+      #tela-admin.ativa { display: block; }
+
+      /* Quando admin está ativo: main-wrap sem margens laterais */
+      body.tela-admin-ativa .main-wrap {
+        max-width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+      .admin-sidebar {
+        position: fixed;
+        left: 0;
+        top: 70px;               /* logo abaixo do header */
+        bottom: 0;
+        width: var(--sb-w);
+        background: var(--primary);
+        padding: 10px 7px;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        overflow: hidden;
+        box-shadow: 3px 0 18px rgba(0,43,94,.22);
+        z-index: 500;
+        transition: width .22s cubic-bezier(.4,0,.2,1);
+      }
+
+      .admin-sidebar-toggle {
+        display: flex; align-items: center; justify-content: center;
+        width: 40px; height: 36px;
+        background: rgba(0,229,255,.12);
+        border: 1px solid rgba(0,229,255,.22);
+        border-radius: 10px; cursor: pointer; color: var(--neon-blue);
+        font-size: 1.1rem; transition: .18s;
+        flex-shrink: 0; margin-bottom: 8px; outline: none;
+      }
+      .admin-sidebar-toggle:hover { background: rgba(0,229,255,.22); }
+
+      .admin-sb-item {
+        display: flex; align-items: center; gap: 11px;
+        padding: 9px 9px; border-radius: 10px;
+        cursor: pointer; color: rgba(255,255,255,.62);
+        font-size: .8rem; font-weight: 800;
+        white-space: nowrap; overflow: hidden;
+        border: none; background: none; width: 100%;
+        text-align: left; transition: .18s;
+        flex-shrink: 0;
+      }
+      .admin-sb-item:hover { background: rgba(0,229,255,.1); color: rgba(255,255,255,.9); }
+      .admin-sb-item.ativo {
+        background: rgba(0,229,255,.16);
+        color: var(--neon-blue);
+        border-left: 3px solid var(--neon-blue);
+        padding-left: 6px;
+      }
+      .admin-sb-item .sb-icon { font-size: 1.15rem; flex-shrink: 0; }
+      .admin-sb-item .sb-txt {
+        opacity: 0; pointer-events: none;
+        transition: opacity .15s .05s;
+        font-size: .78rem;
+      }
+      /* Texto visível só quando expandida (controlado via JS na sidebar) */
+      .admin-sidebar.expandida .admin-sb-item .sb-txt { opacity: 1; pointer-events: auto; }
+
+      .admin-sb-separador {
+        height: 1px; background: rgba(255,255,255,.1);
+        margin: 5px 4px; flex-shrink: 0;
+      }
+
+      /* Conteúdo admin: margem esquerda = largura da sidebar */
+      .admin-content {
+        margin-left: var(--sb-w);
+        padding: 24px 28px 24px 24px;
+        min-width: 0;
+        transition: margin-left .22s cubic-bezier(.4,0,.2,1);
+        box-sizing: border-box;
+        width: calc(100% - var(--sb-w));
+      }
+
+      .aba-admin { display: none; animation: fadeIn .3s; }
+      .aba-admin.ativa { display: block; }
+
+      /* Tabs antigas — ocultas, substituídas pela sidebar */
+      .tabs-container { display: none; }
+
+      /* ── SUBTABS (PILLS) ─────────────────────────────── */
+      .subtabs-container { display: flex; gap: 7px; margin-bottom: 20px; overflow-x: auto; flex-wrap: wrap; }
+      .btn-subtab {
+        background: var(--input-disabled); border: none;
+        padding: 7px 16px; border-radius: 999px; cursor: pointer;
+        font-weight: 800; font-size: .74rem; color: var(--texto-muted); transition: .18s;
+        white-space: nowrap;
+      }
+      .btn-subtab:hover { color: var(--primary); background: var(--azul-claro); border-color: var(--primary); }
+      .btn-subtab.ativo { background: var(--primary); color: var(--neon-blue); box-shadow: 0 0 10px rgba(0,43,94,.25); }
+
+      /* Sub-abas ocultas */
+      .subaba, .subaba-escola, .subaba-agenda, .subaba-prog,
+      .subaba-frota-admin, .subaba-frota-empresa { display: none; animation: fadeIn .3s; }
+      .subaba.ativa, .subaba-escola.ativa, .subaba-agenda.ativa,
+      .subaba-prog.ativa, .subaba-frota-admin.ativa, .subaba-frota-empresa.ativa { display: block; }
+
+      /* ── CALENDÁRIO ──────────────────────────────────── */
+      .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 5px; margin-top: 10px; overflow-x: auto; }
+      .cal-header { font-weight: 900; text-align: center; color: var(--primary); font-size: .7rem; padding: 8px; background: var(--azul-claro); border-radius: 7px; }
+      .cal-day { border: 1px solid var(--borda); border-radius: 9px; padding: 5px; min-height: 100px; background: var(--card-bg); display: flex; flex-direction: column; overflow: hidden; transition: .15s; }
+      .cal-day.empty { background: transparent; border: none; }
+      .cal-date { align-self: center; font-size: 1rem; font-weight: 900; margin-bottom: 4px; color: var(--texto); }
+      .cal-period { flex: 1; border-top: 1px dashed var(--borda); margin-top: 2px; padding-top: 2px; display: flex; flex-direction: column; gap: 2px; }
+      .cal-period-title { font-size: .6rem; font-weight: 900; color: var(--texto-muted); text-align: center; margin-bottom: 2px; text-transform: uppercase; letter-spacing: .04em; }
+      .cal-event-dot {
+        cursor: pointer; padding: 3px 6px; font-size: .65rem; color: white;
+        border-radius: 6px; text-align: center; white-space: nowrap;
+        overflow: hidden; text-overflow: ellipsis; font-weight: 800;
+        transition: .15s;
+      }
+      .cal-event-dot:hover { filter: brightness(.85); transform: scale(1.02); }
+      .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+      .cal-nav button { padding: 9px 18px; cursor: pointer; border: none; background: var(--primary); color: var(--neon-blue); border-radius: 9px; font-weight: 800; font-size: .78rem; transition: .18s; }
+      .cal-nav button:hover { background: var(--neon-blue); color: var(--primary); }
+
+      /* ── AVISO LOTAÇÃO ───────────────────────────────── */
+      #aviso-lotacao { font-size: .75rem; padding: 8px 12px; border-radius: 9px; line-height: 1.4; border: 1px solid var(--borda); margin-top: 8px; font-weight: 700; }
+
+      /* ── MODAL DE AVALIAÇÃO ──────────────────────────── */
+      .detalhe-box {
+        background: var(--azul-claro); padding: 14px 16px; border-radius: 12px;
+        margin-bottom: 16px; font-size: .8rem; line-height: 1.7;
+        border: 1px solid var(--borda);
+      }
+      .detalhe-box p { margin: 0 0 2px 0; }
+      .painel-frota {
+        background: linear-gradient(135deg, var(--azul-claro) 0%, #cce0f5 100%);
+        border-left: 5px solid var(--primary);
+        padding: 14px 16px; border-radius: 12px; margin: 14px 0;
+        display: flex; align-items: center; gap: 14px;
+      }
+      .painel-frota-icon { font-size: 1.5rem; flex-shrink: 0; }
+      .painel-frota-title { font-size: .72rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: .05em; }
+      .painel-frota-val { font-size: .95rem; font-weight: 800; color: var(--texto); margin-top: 2px; }
+      .painel-frota-note { font-size: .65rem; opacity: .75; margin-top: 3px; }
+
+      /* ── HISTÓRICO ───────────────────────────────────── */
+      .historico-box {
+        padding: 10px 12px; background: var(--input-bg); border-radius: 8px;
+        max-height: 120px; overflow-y: auto; font-size: .7rem;
+        white-space: pre-wrap; font-family: 'Courier New', monospace;
+        border: 1px solid var(--borda); color: var(--texto-muted);
+      }
+
+      /* ── CARD-VEICULO ────────────────────────────────── */
+      .card-veiculo .badge-status {
+        display: inline-block; margin-top: 8px; padding: 3px 10px;
+        border-radius: 999px; font-size: .68rem; font-weight: 900;
+        border: 1px solid currentColor;
+      }
+
+      /* ── DESPACHO CARD ───────────────────────────────── */
+      .despacho-card {
+        background: var(--card-bg); border-radius: 14px;
+        padding: 16px; border: 1px solid var(--borda);
+        box-shadow: 0 4px 12px rgba(0,0,0,.06);
+        margin-bottom: 14px; transition: .2s;
+      }
+      .despacho-card-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--borda); padding-bottom: 8px; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+      .despacho-card-evento { font-weight: 900; color: var(--primary); font-size: .9rem; }
+      .tag-pill { font-size: .65rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+      .tag-azul  { background: var(--azul-claro); color: var(--primary); }
+      .tag-roxo  { background: #ede9fe; color: #5b21b6; }
+      .badge-extra { background: var(--vermelho); color: #fff; font-size: .6rem; font-weight: 900; padding: 2px 7px; border-radius: 5px; vertical-align: middle; margin-left: 5px; }
+
+      /* ── RESPONSIVO ──────────────────────────────────── */
+      @media (max-width: 768px) {
+        .main-wrap { padding: 0 .75rem; margin-top: 18px; }
+        .nav-header { padding: .75rem 1rem; }
+        .form-row { flex-direction: column; gap: 10px; }
+        .form-group { min-width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <div id="toast-container"></div>
+
+    <!-- ══════════════════════════════════════════════════
+         NAVBAR MAPA
+    ══════════════════════════════════════════════════ -->
+    <header class="nav-header">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+
+        <!-- Brand -->
+        <div class="d-flex align-items-center gap-3">
+          <div class="nav-brand-icon">🚌</div>
+          <div>
+            <div class="nav-brand-title">SATE</div>
+            <div class="nav-brand-sub">Sistema de Agendamento do Transporte Escolar</div>
+          </div>
+        </div>
+
+        <!-- Tabs de navegação -->
+        <div class="nav-tabs-mapa">
+          <input type="radio" name="mainNav" id="navEscola" checked>
+          <label for="navEscola" onclick="mudarTela('escola')">🏫 Escola</label>
+
+          <input type="radio" name="mainNav" id="navAdmin">
+          <label for="navAdmin" id="label-admin" onclick="mudarTela('admin')" style="display:none;">⚙️ Administração</label>
+
+          <input type="radio" name="mainNav" id="navEmpresa">
+          <label for="navEmpresa" id="label-empresa" onclick="mudarTela('empresa')" style="display:none;">🚌 Empresa</label>
+        </div>
+
+        <!-- Ações do header -->
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <button id="btn-nova-sol-global" class="nav-btn nav-btn-verde" onclick="abrirModal('modal-formulario')" style="display:none;">
+            ➕ Nova Solicitação
+          </button>
+          <button id="btn-visao-escola" class="nav-btn nav-btn-roxo" onclick="toggleVisaoEscola()" style="display:none;">
+            👁️ Visão: Admin
+          </button>
+          <button id="btn-simulacao" class="nav-btn nav-btn-danger" onclick="toggleSimulacao()" style="display:none;">
+            💻 SIMULAÇÃO (ON)
+          </button>
+          <button id="btn-dark-mode" class="nav-btn nav-btn-dark" onclick="toggleDarkMode()" style="display:none;">
+            🌙 Escuro
+          </button>
+          <div class="nav-user-badge">
+            <small id="user-info">Carregando...</small>
+          </div>
+        </div>
+
+      </div>
+    </header>
+
+
+    <!-- ══════════════════════════════════════════════════
+         CORPO PRINCIPAL
+    ══════════════════════════════════════════════════ -->
+    <div class="main-wrap">
+      <?!= include('Tela_Cards'); ?>
+      <?!= include('Tela_Admin'); ?>
+      <?!= include('Tela_Empresa'); ?>
+    </div>
+
+    <?!= include('Tela_Formulario'); ?>
+
+    <!-- ══════════════════════════════════════════════════
+         MODAIS
+    ══════════════════════════════════════════════════ -->
+
+    <!-- AVALIAR PEDIDO -->
+    <div id="modal-admin" class="modal-overlay">
+      <div class="modal-content" style="max-width:600px;">
+        <button class="close-btn" onclick="fecharModal('modal-admin')">&times;</button>
+        <h3 class="modal-title">📋 Avaliar Solicitação</h3>
+        <input type="hidden" id="admin-id-linhas">
+
+        <div class="detalhe-box">
+          <p><strong>Unidade:</strong> <span id="view-und"></span></p>
+          <p><strong>Evento:</strong> <span id="view-evento"></span></p>
+          <p><strong>Rota:</strong> <span id="view-rota"></span></p>
+          <p><strong>Data/Hora:</strong> <span id="view-data"></span></p>
+          <p><strong>Responsável:</strong> <span id="view-resp"></span></p>
+          <p><strong>Turmas:</strong> <span id="view-turmas"></span></p>
+          <p><strong>Acessibilidade:</strong> <span id="view-acess"></span></p>
+          <p><strong>Obs:</strong> <span id="view-obs"></span></p>
+        </div>
+
+        <div id="grupo-justificativa" style="display:none; margin-bottom:14px; animation:fadeIn .3s;">
+          <label style="font-weight:800; color:var(--vermelho); font-size:.72rem; text-transform:uppercase; letter-spacing:.05em;">Motivo da Recusa (Obrigatório) *</label>
+          <textarea id="admin-justificativa" rows="3" placeholder="Informe por que a solicitação não pôde ser atendida..." style="width:100%; margin-top:6px;"></textarea>
+        </div>
+
+        <div class="painel-frota">
+          <span class="painel-frota-icon">🚌</span>
+          <div>
+            <div class="painel-frota-title">Planejamento de Frota</div>
+            <div id="texto-necessidade-onibus" class="painel-frota-val"></div>
+            <div class="painel-frota-note">* Capacidade calculada para garantir assento a todos e presença de um responsável por veículo.</div>
+          </div>
+        </div>
+
+        <input type="hidden" id="admin-placa" value="">
+
+        <div class="d-flex gap-3 mt-3">
+          <button type="button" class="btn-submit" id="btn-aprovar-admin"
+            style="background:var(--verde); border-color:var(--verde); color:#fff; flex:1; margin-top:0;"
+            onclick="enviarAvaliacaoAdmin('Aprovado (Na Rota)')">✅ Aprovar Pedido</button>
+          <button type="button" class="btn-danger" id="btn-recusar-admin"
+            style="padding:11px 20px; font-size:.88rem; border-radius:11px; flex:1; font-weight:900;"
+            onclick="enviarAvaliacaoAdmin('Recusado')">❌ Recusar Pedido</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESPACHO EMPRESA -->
+    <div id="modal-despacho-empresa" class="modal-overlay">
+      <div class="modal-content" style="max-width:600px;">
+        <button class="close-btn" onclick="fecharModal('modal-despacho-empresa')">&times;</button>
+        <h3 class="modal-title">🚌 Alocar Frota e Motoristas</h3>
+
+        <div class="detalhe-box">
+          <p><strong>Evento:</strong> <span id="desp-view-evento"></span></p>
+          <p><strong>Escola:</strong> <span id="desp-view-escola"></span> (<span id="desp-view-alunos"></span> passageiros)</p>
+          <p><strong>Rota:</strong> <span id="desp-view-rota"></span></p>
+          <p><strong>Saída:</strong> <span id="desp-view-saida"></span></p>
+          <p style="color:var(--vermelho); font-weight:900; margin-top:8px;">📌 Necessário: <span id="desp-view-qtd"></span> ônibus</p>
+        </div>
+
+        <div id="container-selecao-despacho" style="max-height:40vh; overflow-y:auto; padding-right:5px;"></div>
+
+        <input type="hidden" id="desp-id-linhas">
+        <input type="hidden" id="desp-qtd-necessaria">
+
+        <button id="btn-confirmar-despacho" class="btn-submit"
+          style="margin-top:16px; background:var(--verde); border-color:var(--verde); color:#fff;"
+          onclick="confirmarDespachoModal()">
+          ✅ Confirmar Escala Total
+        </button>
+      </div>
+    </div>
+
+    <!-- CANCELAMENTO -->
+    <div id="modal-cancelamento" class="modal-overlay">
+      <div class="modal-content" style="max-width:420px; text-align:center;">
+        <button class="close-btn" onclick="fecharModal('modal-cancelamento')">&times;</button>
+        <h3 class="modal-title" style="color:var(--vermelho); justify-content:center;">Cancelar Pedido</h3>
+        <p style="font-size:.82rem; color:var(--texto-muted); margin-bottom:18px;">Por favor, informe o motivo do cancelamento. Essa ação registrará no histórico.</p>
+        <input type="hidden" id="cancel-id-linhas">
+        <div class="form-group" style="margin-bottom:14px; text-align:left;">
+          <label>Justificativa</label>
+          <textarea id="cancel-justificativa" rows="3" placeholder="Motivo..." required></textarea>
+        </div>
+        <button class="btn-danger" style="width:100%; padding:12px; font-size:.9rem; font-weight:900; border-radius:11px;" onclick="confirmarCancelamento()">
+          Confirmar Cancelamento
+        </button>
+      </div>
+    </div>
+
+    <!-- DETALHES DO CARD -->
+    <div id="modal-detalhes-card" class="modal-overlay">
+      <div class="modal-content" style="max-width:600px;">
+        <button class="close-btn" onclick="fecharModal('modal-detalhes-card')">&times;</button>
+        <h3 class="modal-title">📄 Detalhes da Solicitação</h3>
+        <div class="detalhe-box" style="line-height:1.8;">
+          <p>🏛️ <strong>Unidade:</strong> <span id="det-und"></span></p>
+          <p>📅 <strong>Evento:</strong> <span id="det-evento"></span></p>
+          <p>📍 <strong>Trajeto:</strong> <span id="det-rota"></span></p>
+          <p>🕒 <strong>Data e Hora:</strong> <span id="det-data"></span></p>
+          <hr style="border:0; border-top:1px dashed var(--borda); margin:8px 0;">
+          <p>👩‍🏫 <strong>Prof. Responsável:</strong> <span id="det-resp"></span></p>
+          <p>📞 <strong>Contato:</strong> <span id="det-tel"></span></p>
+          <p>👨‍💻 <strong>Solicitado por:</strong> <span id="det-criado-por"></span> em <span id="det-data-sol"></span></p>
+          <hr style="border:0; border-top:1px dashed var(--borda); margin:8px 0;">
+          <p>🚌 <strong>Veículo (Placa):</strong> <span id="det-placa"></span></p>
+          <p>🧑‍✈️ <strong>Motorista:</strong> <span id="det-motorista"></span></p>
+          <hr style="border:0; border-top:1px dashed var(--borda); margin:8px 0;">
+          <p style="margin-bottom:4px;"><strong>Status:</strong> <span id="det-status" style="padding:3px 10px; border-radius:8px; font-weight:900;"></span></p>
+        </div>
+        <div class="label-mini mb-1" style="font-size:.65rem; font-weight:900; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.06em;">Histórico</div>
+        <div id="det-historico-box" class="historico-box"></div>
+      </div>
+    </div>
+
+    <!-- VEÍCULO -->
+    <div id="modal-veiculo" class="modal-overlay">
+      <div class="modal-content" style="max-width:520px;">
+        <button class="close-btn" onclick="fecharModal('modal-veiculo')">&times;</button>
+        <h3 class="modal-title">🚐 Cadastrar / Editar Veículo</h3>
+        <form id="formVeiculo" onsubmit="enviarVeiculo(event)">
+          <input type="hidden" id="v-data">
+          <input type="hidden" id="v-id-linha">
+          <div class="form-row">
+            <div class="form-group" style="flex:2"><label>Empresa Parceira</label><input type="text" id="v-empresa" required></div>
+            <div class="form-group" style="flex:1"><label>Placa</label><input type="text" id="v-placa" required></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Tipo (Ex: Ônibus, Van)</label><input type="text" id="v-veiculo" required></div>
+            <div class="form-group"><label>Lotação (Vagas)</label><input type="number" id="v-lotacao" required></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Acessível (Elevador)?</label><select id="v-acessibilidade"><option value="Não">Não</option><option value="Sim">Sim</option></select></div>
+            <div class="form-group"><label>Status</label><select id="v-disponibilidade"><option value="Disponível">Disponível</option><option value="Em Rota">Em Rota</option><option value="Manutenção">Manutenção</option></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="width:100%">
+              <label>Motorista Vinculado</label>
+              <select id="v-motorista" style="width:100%"><option value="">Nenhum / Não Cadastrado</option></select>
+            </div>
+          </div>
+          <button type="submit" class="btn-submit" id="btn-salvar-veiculo">Salvar Veículo</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- MOTORISTA -->
+    <div id="modal-motorista" class="modal-overlay">
+      <div class="modal-content" style="max-width:420px;">
+        <button class="close-btn" onclick="fecharModal('modal-motorista')">&times;</button>
+        <h3 class="modal-title">🧑‍✈️ Cadastrar / Editar Motorista</h3>
+        <form id="formMotorista" onsubmit="salvarMotorista(event)">
+          <input type="hidden" id="mot-id-linha">
+          <div class="form-group" style="margin-bottom:10px;"><label>Empresa</label><input type="text" id="mot-empresa" required></div>
+          <div class="form-group" style="margin-bottom:10px;"><label>Nome Completo</label><input type="text" id="mot-nome" required></div>
+          <div class="form-group" style="margin-bottom:10px;"><label>Contato (Telefone)</label><input type="text" id="mot-contato" oninput="maskPhone(this)" required></div>
+          <div class="form-group" style="margin-bottom:14px;"><label>Status</label><select id="mot-status"><option value="Ativo">Ativo</option><option value="Inativo">Inativo</option></select></div>
+          <button type="submit" class="btn-submit" id="btn-salvar-motorista">Salvar Motorista</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- SIMULAR ESCOLA -->
+    <div id="modal-simular-escola" class="modal-overlay" style="z-index:999999;">
+      <div class="modal-content" style="max-width:420px; text-align:center;">
+        <button class="close-btn" onclick="fecharModal('modal-simular-escola')">&times;</button>
+        <h3 class="modal-title" style="justify-content:center;">👁️ Simular Visão da Escola</h3>
+        <p style="font-size:.82rem; color:var(--texto-muted); margin-bottom:18px;">Selecione a unidade que deseja visualizar:</p>
+        <select id="select-escola-simulacao" style="width:100%; margin-bottom:18px;"></select>
+        <button class="btn-submit" style="background:var(--verde); border-color:var(--verde); color:#fff; margin-top:0;" onclick="confirmarSimulacaoEscola()">
+          Iniciar Simulação
+        </button>
+      </div>
+    </div>
+
+    <!-- MÍDIA DO EVENTO -->
+    <div id="modal-midia-evento" class="modal-overlay">
+      <div class="modal-content" style="max-width:720px;">
+        <button class="close-btn" onclick="fecharModal('modal-midia-evento')">&times;</button>
+        <h3 class="modal-title">🖼️ Personalizar Pré-Cadastro</h3>
+        <form id="formMidia" onsubmit="salvarMidia(event)">
+          <input type="hidden" id="admin-midia-linha">
+          <div class="form-group" style="margin-bottom:14px;"><label>Evento *</label><select id="m-evento" required></select></div>
+          <div class="form-group" style="margin-bottom:14px;"><label>URL da Imagem</label><input type="url" id="m-img" placeholder="Ex: https://link-da-imagem.com/foto.jpg"></div>
+          <div class="form-group" style="margin-bottom:14px;"><label>Texto Descritivo</label><div id="editor-container" style="height:180px;"></div></div>
+          <div class="form-group" style="margin-bottom:18px; border-top:1px solid var(--borda); padding-top:14px;">
+            <label style="color:var(--laranja);">Anexos Adicionais</label>
+            <div id="container-links-midia" style="display:flex; flex-direction:column; gap:10px; margin-bottom:10px;"></div>
+            <button type="button" class="btn-submit" style="background:var(--azul-claro); color:var(--primary); border-color:var(--primary); margin-top:0; width:auto; font-size:.75rem;" onclick="adicionarCampoLinkMidia()">+ Adicionar Novo Arquivo</button>
+          </div>
+          <button type="submit" class="btn-submit" id="btn-salvar-midia">Salvar Layout</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- DETALHES DO EVENTO (CALENDÁRIO) -->
+    <div id="modal-detalhes-evento" class="modal-overlay">
+      <div class="modal-content" style="max-width:620px;">
+        <button class="close-btn" onclick="fecharModal('modal-detalhes-evento')">&times;</button>
+        <h3 id="detalhe-titulo-multiplo" class="modal-title">📅 Opções do Evento</h3>
+        <div id="container-midia-evento"></div>
+        <p style="font-size:.78rem; color:var(--texto-muted); margin-bottom:14px;">Selecione o horário desejado:</p>
+        <div id="lista-sub-eventos" style="display:flex; flex-direction:column; gap:14px; max-height:50vh; overflow-y:auto; padding-right:4px;"></div>
+      </div>
+    </div>
+
+    <!-- USUÁRIO -->
+    <div id="modal-usuario" class="modal-overlay">
+      <div class="modal-content" style="max-width:620px;">
+        <button class="close-btn" onclick="fecharModal('modal-usuario')">&times;</button>
+        <h3 class="modal-title">👥 Cadastrar / Editar Usuário</h3>
+        <form id="formUsuario" onsubmit="salvarUsuario(event)">
+          <input type="hidden" id="admin-usr-linha">
+          <div class="form-row">
+            <div class="form-group"><label>Unidade Escolar / Setor</label><input type="text" id="u-unidade" required></div>
+            <div class="form-group"><label>Função / Cargo</label><input type="text" id="u-funcao"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Nome Completo</label><input type="text" id="u-nome" required></div>
+            <div class="form-group"><label>E-mail (Conta Google)</label><input type="email" id="u-email" required></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Perfil de Acesso</label><select id="u-perfil" required><option value="Escola">Escola</option><option value="Empresa">Empresa</option><option value="Administrador">Administrador</option></select></div>
+            <div class="form-group"><label>Ativo?</label><select id="u-ativo"><option value="Sim">Sim</option><option value="Não">Não</option></select></div>
+          </div>
+          <button type="submit" class="btn-submit" id="btn-salvar-usr">Salvar Usuário</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- AGENDA DINÂMICA -->
+    <div id="modal-agenda-dinamica" class="modal-overlay">
+      <div class="modal-content" style="max-width:620px;">
+        <button class="close-btn" onclick="fecharModal('modal-agenda-dinamica')">&times;</button>
+        <h3 class="modal-title">📅 Adicionar / Editar Item</h3>
+        <form id="formAgendaDinamica" onsubmit="salvarEstruturaDinamica(event)">
+          <input type="hidden" id="dinamico-nome-aba">
+          <input type="hidden" id="dinamico-id-linha">
+          <div id="dinamico-form-inputs" style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;"></div>
+          <button type="submit" class="btn-submit" id="btn-salvar-dyn">Salvar Item</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- CONFIGURAÇÃO -->
+    <div id="modal-config" class="modal-overlay">
+      <div class="modal-content" style="max-width:620px;">
+        <button class="close-btn" onclick="fecharModal('modal-config')">&times;</button>
+        <h3 class="modal-title">⚙️ Nova Regra / Variável</h3>
+        <form id="formConfig" onsubmit="salvarConfig(event)">
+          <input type="hidden" id="admin-cfg-linha">
+          <div class="form-group" style="margin-bottom:13px;"><label>Chave</label><input type="text" id="cfg-chave" required></div>
+          <div class="form-group" style="margin-bottom:13px;"><label>Valor da Regra</label><input type="text" id="cfg-valor" required></div>
+          <div class="form-group" style="margin-bottom:13px;"><label>Descrição</label><textarea id="cfg-desc" rows="3" style="width:100%;"></textarea></div>
+          <button type="submit" class="btn-submit" id="btn-salvar-cfg">Salvar Regra</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- RESERVA DE FROTA -->
+    <div id="modal-reserva" class="modal-overlay">
+      <div class="modal-content" style="max-width:420px;">
+        <button class="close-btn" onclick="fecharModal('modal-reserva')">&times;</button>
+        <h3 class="modal-title">🔒 Bloquear Frota</h3>
+        <form id="formReserva" onsubmit="salvarReserva(event)">
+          <input type="hidden" id="res-id">
+          <div class="form-group" style="margin-bottom:10px;">
+            <label>Datas Selecionadas (Múltiplas)</label>
+            <div id="res-container-datas" style="display:flex; flex-wrap:wrap; gap:5px; padding:10px; background:var(--azul-claro); border-radius:10px; min-height:38px; border:1px solid var(--borda);">
+              <small style="opacity:.6;">Clique nos dias do calendário para adicionar...</small>
+            </div>
+            <input type="hidden" id="res-datas-json" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:1;"><label>Período</label><select id="res-periodo" required><option value="Manhã">Manhã</option><option value="Tarde">Tarde</option><option value="Integral">Integral</option></select></div>
+            <div class="form-group" style="flex:1;"><label>Qtd. Ônibus/Dia</label><input type="number" id="res-qtd" min="1" value="1" required></div>
+          </div>
+          <div class="form-group" style="margin-bottom:10px;">
+            <label>Evento / Motivo</label>
+            <select id="res-evento-select" onchange="toggleOutrosReserva()" required></select>
+          </div>
+          <div class="form-group" id="res-grupo-outros" style="display:none; margin-bottom:10px;">
+            <label>Especifique o Evento *</label>
+            <input type="text" id="res-evento-outro" placeholder="Digite o nome do evento">
+          </div>
+          <div class="form-group" style="margin-bottom:10px;">
+            <label>Data Limite de Liberação (Expiração)</label>
+            <small style="display:block; color:var(--texto-muted); margin-bottom:4px; font-size:.65rem;">A reserva cairá automaticamente após este dia.</small>
+            <input type="date" id="res-expira" required>
+          </div>
+          <button type="submit" id="btn-salvar-reserva" class="btn-submit" style="background:var(--verde); border-color:var(--verde); color:#fff;">
+            🔒 Salvar Reserva
+          </button>
+        </form>
+      </div>
+    </div>
+
+
+    <!-- MODAL: EXCEÇÃO DE DISPONIBILIDADE DE FROTA -->
+    <div id="modal-frota-data" class="modal-overlay">
+      <div class="modal-content" style="max-width:500px;">
+        <button class="close-btn" onclick="fecharModal('modal-frota-data')">&times;</button>
+        <h3 class="modal-title">🗓️ Configurar Disponibilidade de Frota</h3>
+        <div style="background:var(--azul-claro); border-radius:10px; padding:10px 14px; margin-bottom:16px; font-size:.75rem; font-weight:700; color:var(--primary);">
+          Configure exceções ao padrão de <strong id="modal-frota-padrao-txt">0</strong> ônibus. Ex: semana de manutenção, feriado regional, evento da prefeitura.
+        </div>
+        <form onsubmit="salvarExcecaoFrota(event)">
+          <input type="hidden" id="fd-id">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Data Início *</label>
+              <input type="date" id="fd-inicio" required>
+            </div>
+            <div class="form-group">
+              <label>Data Fim *</label>
+              <input type="date" id="fd-fim" required>
+              <small style="font-size:.65rem; color:var(--texto-muted); display:block; margin-top:3px;">Para data única, repita a mesma data.</small>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Período Afetado *</label>
+              <select id="fd-periodo" required>
+                <option value="Integral">Integral (Manhã e Tarde)</option>
+                <option value="Manhã">Somente Manhã</option>
+                <option value="Tarde">Somente Tarde</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Ônibus Disponíveis *</label>
+              <input type="number" id="fd-qtd" min="0" required placeholder="Ex: 5">
+              <small style="font-size:.65rem; color:var(--texto-muted); display:block; margin-top:3px;">0 = nenhum ônibus disponível.</small>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:16px;">
+            <label>Motivo / Observação</label>
+            <input type="text" id="fd-motivo" placeholder="Ex: Manutenção programada de 3 veículos, Feriado regional...">
+          </div>
+          <button type="submit" class="btn-submit" style="background:var(--verde); border-color:var(--verde); color:#fff;">
+            💾 Salvar Disponibilidade
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+    <script>
+      // ==========================================
+      // VARIÁVEIS GLOBAIS E INICIALIZAÇÃO
+      // ==========================================
+      window.sysConfig = {}; window.locaisEventos = {}; window.totalFrotaAtiva = 0; window.busesUsedByDatePeriod = {};
+      window.turmasPorUnidade = {}; window.enderecosPorUnidade = {}; window.turmasDaUnidade = []; window.catalogoFilmes = [];
+      window.todosPedidos = []; window.pedidosFiltrados = []; window.pedidosDaEscolaSimulada = [];
+      window.escolaModoLista = false; window.paginaAtual = 1; const ITENS_POR_PAGINA = 6;
+      window.isAdmin = false; window.MODO_SIMULACAO = false; window.simulandoEscola = false;
+
+      // Frota por período — padrão 6 manhã + 6 tarde
+      window.frotaManha = 6;
+      window.frotaTarde = 6;
+      window.FROTA_MAXIMA_DIA = 12; // limite que gera alerta
+
+      window.listaUsuarios = []; window.listaConfig = []; window.listaVeiculos = []; window.listaMotoristas = [];
+      window.listaEventosDrop = []; window.calendarioEventos = []; window.calendarioGroups = [];
+      window.agendasDinamicas = []; window.programacoesDinamicas = [];
+      window.midiaEventosData = []; window.midiaEventos = {}; window.todasUnidadesCache = [];
+      window.calDataAtual = new Date();
+      window.quillEditor = null;
+
+      // ── NOVAS VARIÁVEIS GLOBAIS v3 ──────────────────
+      window.excecoesFrotaPorData = JSON.parse(localStorage.getItem('sate_frota_excecoes') || '[]');
+      window.calFrotaAtual = new Date();
+      window.autoRefreshTimer = null;
+      window.autoRefreshAtivo = false;
+
+      const EVENT_PALETTE = ['#007bff','#6f42c1','#17a2b8','#e83e8c','#fd7e14','#20c997','#28a745','#343a40'];
+      window.eventColorMap = {}; window.eventColorIndex = 0;
+
+      function getEventColor(titulo) {
+        let match = titulo.match(/\[(.*?)\]/); let nome = match ? match[1] : 'Outros';
+        if (!window.eventColorMap[nome]) { window.eventColorMap[nome] = EVENT_PALETTE[window.eventColorIndex % EVENT_PALETTE.length]; window.eventColorIndex++; }
+        return window.eventColorMap[nome];
+      }
+
+      function mostrarToast(msg, tipo = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div'); toast.className = `toast ${tipo}`; toast.innerText = msg; container.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
+      }
+
+      google.script.run.withSuccessHandler(setup).getDadosParaFormulario();
+
+      function setup(u) {
+        if (!u || u.erro) return mostrarToast("Erro de Acesso: " + (u ? u.erro : "Falha"), 'error');
+        document.getElementById('user-info').innerText = `${u.nome} (${u.unidade})`;
+        window.sysConfig = u.configuracoes || {}; window.totalFrotaAtiva = u.totalFrotaAtiva || 0;
+        // Frota por período: usa config do servidor se existir, senão usa padrão 6+6
+        window.frotaManha = parseInt(window.sysConfig['FROTA_MANHA']) || 6;
+        window.frotaTarde = parseInt(window.sysConfig['FROTA_TARDE']) || 6;
+        window.FROTA_MAXIMA_DIA = parseInt(window.sysConfig['FROTA_MAX_DIA']) || 12;
+        window.turmasPorUnidade = u.turmasPorUnidade || {}; window.enderecosPorUnidade = u.enderecosPorUnidade || {}; window.catalogoFilmes = u.catalogoFilmes || [];
+        window.listaEventosDrop = u.listaEventos || ["CAUIM - Cineclube", "Outros"];
+        window.calendarioEventos = u.calendarioEventos || []; window.locaisEventos = u.locaisEventos || {};
+        window.midiaEventos = u.midiaEventos || {}; window.todasUnidadesCache = u.todasUnidades || [];
+
+        const selEvt = document.getElementById('form-evento'); selEvt.innerHTML = '<option value="">Selecione...</option>';
+        window.listaEventosDrop.forEach(ev => selEvt.innerHTML += `<option value="${ev}">${ev}</option>`);
+
+        let perfilNormalizado = String(u.perfil || '').toLowerCase();
+        window.isAdmin = (perfilNormalizado === 'administrador' || u.isDev);
+
+        if (u.isDev) {
+          window.MODO_SIMULACAO = true;
+          document.getElementById('btn-simulacao').style.display = 'inline-flex';
+          document.getElementById('btn-visao-escola').style.display = 'inline-flex';
+        }
+
+        if (window.isAdmin) {
+          document.getElementById('label-admin').style.display = 'inline-flex';
+          document.getElementById('label-empresa').style.display = 'inline-flex';
+          document.getElementById('btn-dark-mode').style.display = 'inline-flex';
+          document.getElementById('btn-nova-sol-global').style.display = 'inline-flex';
+          let selectHTML = `<select id="form-unidade" required onchange="mudouUnidade()"><option value="">Selecione a Unidade...</option>`;
+          u.todasUnidades.forEach(und => { selectHTML += `<option value="${und}" ${und.toLowerCase() === String(u.unidade||'').toLowerCase() ? 'selected' : ''}>${und}</option>`; });
+          document.getElementById('container-unidade').innerHTML = selectHTML + `</select>`;
+
+          setTimeout(() => {
+            if (document.getElementById('editor-container')) {
+              window.quillEditor = new Quill('#editor-container', { theme: 'snow', modules: { toolbar: [['bold','italic','underline'],[{'color':[]},{'background':[]}],[{'header':[1,2,3,false]}],[{'align':[]}],['link'],['clean']] } });
+            }
+          }, 500);
+
+          carregarMotoristas(); carregarVeiculos(); carregarMidias();
+        } else {
+          document.getElementById('form-unidade').value = u.unidade || '';
+        }
+        document.getElementById('form-origem').value = u.unidade || '';
+        mudouUnidade(); configurarCalendarioAuto();
+        carregarCards(); renderizarMes(); mudarTela('escola');
+
+        // Ajustar top da sidebar à altura real do header
+        const header = document.querySelector('.nav-header');
+        if (header) {
+          const h = header.offsetHeight;
+          document.documentElement.style.setProperty('--header-h', h + 'px');
+          const sb = document.getElementById('admin-sidebar');
+          if (sb) sb.style.top = h + 'px';
+        }
+      }
+
+      // ==========================================
+      // SIMULAÇÃO E NAVEGAÇÃO
+      // ==========================================
+      function toggleVisaoEscola() {
+        if (window.simulandoEscola) {
+          window.simulandoEscola = false;
+          const btn = document.getElementById('btn-visao-escola');
+          btn.innerText = '👁️ Visão: Admin'; btn.style.background = '#6f42c1';
+          document.getElementById('label-admin').style.display = 'inline-flex';
+          document.getElementById('label-empresa').style.display = 'inline-flex';
+          document.getElementById('btn-dark-mode').style.display = 'inline-flex';
+          document.getElementById('btn-nova-sol-global').style.display = 'inline-flex';
+          window.isAdmin = true;
+          let selectHTML = `<select id="form-unidade" required onchange="mudouUnidade()"><option value="">Selecione a Unidade...</option>`;
+          window.todasUnidadesCache.forEach(und => { selectHTML += `<option value="${und}">${und}</option>`; });
+          document.getElementById('container-unidade').innerHTML = selectHTML + `</select>`;
+          document.getElementById('form-origem').value = '';
+          window.pedidosFiltrados = [...window.todosPedidos]; atualizarKPIsEFiltrosUser(window.todosPedidos); renderizarVisaoEscola(); renderizarMes(); mostrarToast('Privilégios de Admin restaurados.', 'success'); aplicarRegrasDoEvento();
+        } else {
+          let sel = document.getElementById('select-escola-simulacao');
+          sel.innerHTML = '<option value="">-- Modo de Teste Genérico --</option>';
+          window.todasUnidadesCache.forEach(u => sel.innerHTML += `<option value="${u}">${u}</option>`);
+          abrirModal('modal-simular-escola');
+        }
+      }
+
+      function confirmarSimulacaoEscola() { let escolaSelecionada = document.getElementById('select-escola-simulacao').value; fecharModal('modal-simular-escola'); iniciarSimulacaoEscola(escolaSelecionada); }
+
+      function iniciarSimulacaoEscola(nomeEscola) {
+        window.simulandoEscola = true;
+        const btn = document.getElementById('btn-visao-escola');
+        btn.innerText = '👁️ Visão: Escola'; btn.style.background = '#20c997';
+        document.getElementById('label-admin').style.display = 'none';
+        document.getElementById('label-empresa').style.display = 'none';
+        document.getElementById('btn-dark-mode').style.display = 'none';
+        document.getElementById('btn-nova-sol-global').style.display = 'none';
+        window.isAdmin = false;
+        let escolaAlvo = nomeEscola || "EMEF APRESENTAÇÃO (SIMULAÇÃO)";
+        document.getElementById('container-unidade').innerHTML = `<input type="text" id="form-unidade" required disabled value="${escolaAlvo}">`;
+        if (window.turmasPorUnidade[escolaAlvo]) { window.turmasDaUnidade = window.turmasPorUnidade[escolaAlvo]; document.getElementById('form-origem').value = window.enderecosPorUnidade[escolaAlvo] || ''; } else { window.turmasDaUnidade = [{nome:'1º ANO A',ciclo:'FUNDAMENTAL I',qtd:30},{nome:'2º ANO B',ciclo:'FUNDAMENTAL I',qtd:25}]; document.getElementById('form-origem').value = 'Rua Genérica da Simulação, 123'; }
+        if (document.body.classList.contains('dark-mode')) toggleDarkMode();
+        window.pedidosDaEscolaSimulada = window.todosPedidos.filter(p => p.unidade.toLowerCase() === escolaAlvo.toLowerCase());
+        window.pedidosFiltrados = [...window.pedidosDaEscolaSimulada];
+        atualizarKPIsEFiltrosUser(window.pedidosDaEscolaSimulada); renderizarVisaoEscola(); renderizarMes(); mudarTela('escola');
+        mostrarToast(`Simulando a visão de: ${escolaAlvo}`, 'success'); aplicarRegrasDoEvento();
+      }
+
+      function toggleSimulacao() { window.MODO_SIMULACAO = !window.MODO_SIMULACAO; const b = document.getElementById('btn-simulacao'); if (window.MODO_SIMULACAO) { b.innerText = '💻 SIMULAÇÃO (ON)'; b.style.background = 'var(--vermelho)'; mostrarToast('Modo Simulação Ativado.', 'warning'); } else { b.innerText = '⚠️ MODO REAL (OFF)'; b.style.background = 'var(--laranja)'; mostrarToast('Modo de Gravação Real Ativado', 'success'); } }
+      function maskPhone(el) { let v = el.value.replace(/\D/g, ""); v = v.replace(/^(\d{2})(\d)/g, "($1) $2"); v = v.replace(/(\d{5})(\d)/, "$1-$2"); el.value = v.substring(0, 15); }
+      function toggleDarkMode() { document.body.classList.toggle('dark-mode'); const isDark = document.body.classList.contains('dark-mode'); const btn = document.getElementById('btn-dark-mode'); if (isDark) { btn.innerText = '☀️ Claro'; } else { btn.innerText = '🌙 Escuro'; } }
+      function toggleViewMode() { window.escolaModoLista = !window.escolaModoLista; const btn = document.getElementById('btn-view-mode'); if (window.escolaModoLista) { btn.innerText = 'Visualização em Cards'; document.getElementById('escola-view-cards').style.display = 'none'; document.getElementById('escola-view-lista').style.display = 'block'; } else { btn.innerText = 'Visualização em Lista'; document.getElementById('escola-view-cards').style.display = 'block'; document.getElementById('escola-view-lista').style.display = 'none'; } window.paginaAtual = 1; renderizarVisaoEscola(); }
+
+      function mudarTela(t) { 
+        document.querySelectorAll('.tela').forEach(el => el.classList.remove('ativa')); 
+        document.getElementById('tela-' + t).classList.add('ativa');
+
+        // Classe no body controla layout do main-wrap (sidebar fixa só no admin)
+        document.body.classList.toggle('tela-admin-ativa', t === 'admin');
+        
+        // Auto-refresh na empresa: ativar/desativar conforme aba
+        if (t === 'empresa') {
+          carregarCards();
+          setTimeout(() => filtrarDespachoData('hoje'), 500);
+          if (!window.autoRefreshAtivo) {
+            window.autoRefreshAtivo = true;
+            window.autoRefreshTimer = setInterval(() => {
+              if (document.querySelector('#tela-empresa.ativa')) {
+                carregarCards();
+                let btnAtivo = document.querySelector('#empresa-aba-despacho .btn-subtab.ativo');
+                let abaId = btnAtivo ? btnAtivo.id.replace('btn-filtro-','') : 'hoje';
+                setTimeout(() => filtrarDespachoData(abaId), 800);
+                let badge = document.getElementById('badge-refresh-empresa');
+                if (badge) { badge.innerText = '🔄 Atualizado agora'; setTimeout(() => { badge.innerText = ''; }, 3000); }
+              } else {
+                clearInterval(window.autoRefreshTimer); window.autoRefreshAtivo = false;
+              }
+            }, 120000);
+          }
+        } else {
+          if (window.autoRefreshTimer) { clearInterval(window.autoRefreshTimer); window.autoRefreshAtivo = false; }
+        }
+        if (t === 'admin') {
+          setTimeout(() => atualizarKpiFrotaDatas(), 300);
+        }
+      }
+
+      function mudarAbaAdmin(abaId) { document.querySelectorAll('#tela-admin .aba-admin').forEach(el => el.classList.remove('ativa')); let aba = document.getElementById('admin-aba-' + abaId); if (aba) aba.classList.add('ativa'); }
+      function mudarSubAbaAgenda(abaId) { document.querySelectorAll('.subaba-agenda').forEach(el => el.classList.remove('ativa')); document.querySelectorAll('#nav-pilulas-agendas .btn-subtab').forEach(el => el.classList.remove('ativo')); document.getElementById('subaba-' + abaId).classList.add('ativa'); document.querySelector(`#nav-pilulas-agendas button[onclick="mudarSubAbaAgenda('${abaId}')"]`).classList.add('ativo'); }
+      function mudarSubAbaProg(abaId) { document.querySelectorAll('.subaba-prog').forEach(el => el.classList.remove('ativa')); document.querySelectorAll('#nav-pilulas-programacoes .btn-subtab').forEach(el => el.classList.remove('ativo')); document.getElementById('subaba-' + abaId).classList.add('ativa'); document.querySelector(`#nav-pilulas-programacoes button[onclick="mudarSubAbaProg('${abaId}')"]`).classList.add('ativo'); }
+      function mudarSubAbaEscola(abaId) { document.querySelectorAll('#tela-escola .btn-subtab').forEach(el => el.classList.remove('ativo')); document.querySelector(`#tela-escola button[onclick="mudarSubAbaEscola('${abaId}')"]`).classList.add('ativo'); document.querySelectorAll('.subaba-escola').forEach(el => el.classList.remove('ativa')); if (abaId === 'calendario') { document.getElementById('subaba-escola-calendario').classList.add('ativa'); } else { document.getElementById('subaba-escola-painel').classList.add('ativa'); } }
+      function mudarSubAbaFrotaAdmin(abaId) { document.querySelectorAll('.subaba-frota-admin').forEach(el => el.classList.remove('ativa')); document.querySelectorAll('#admin-aba-veiculos .btn-subtab').forEach(el => el.classList.remove('ativo')); document.getElementById(`frota-${abaId}-admin`).classList.add('ativa'); document.querySelector(`#admin-aba-veiculos button[onclick="mudarSubAbaFrotaAdmin('${abaId}')"]`).classList.add('ativo'); }
+      function mudarAbaEmpresa(abaId) { document.querySelectorAll('#tela-empresa .aba-admin').forEach(el => el.classList.remove('ativa')); document.querySelectorAll('#tela-empresa .btn-tab-admin').forEach(el => el.classList.remove('ativo')); document.getElementById('empresa-aba-' + abaId).classList.add('ativa'); document.querySelector(`#tela-empresa button[onclick="mudarAbaEmpresa('${abaId}')"]`).classList.add('ativo'); }
+      function mudarSubAbaFrota(abaId, contexto) { document.querySelectorAll(`.subaba-frota-${contexto}`).forEach(el => el.classList.remove('ativa')); document.querySelectorAll(`#empresa-aba-frota .btn-subtab`).forEach(el => el.classList.remove('ativo')); document.getElementById(`frota-${abaId}-${contexto}`).classList.add('ativa'); document.querySelector(`#empresa-aba-frota button[onclick="mudarSubAbaFrota('${abaId}', '${contexto}')"]`).classList.add('ativo'); }
+
+      function filtrarDespachoData(tipo) {
+        let hojeDate = new Date(); hojeDate.setHours(12, 0, 0, 0); let datasAlvo = [];
+        function formatData(d) { return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear(); }
+        let dataHojeStr = formatData(hojeDate); let dataAmanhaStr = formatData(new Date(hojeDate.getTime() + 86400000));
+        let datasPermitidasConfirmacao = [dataHojeStr, dataAmanhaStr];
+        if (tipo === 'hoje') { document.getElementById('empresa-data-especifica').value = ''; datasAlvo.push(dataHojeStr); }
+        else if (tipo === 'amanha') { document.getElementById('empresa-data-especifica').value = ''; datasAlvo.push(dataAmanhaStr); }
+        else if (tipo === '5dias') { document.getElementById('empresa-data-especifica').value = ''; for (let i = 0; i < 5; i++) { datasAlvo.push(formatData(new Date(hojeDate.getTime() + (i * 86400000)))); } }
+        else if (tipo === 'especifica') { let val = document.getElementById('empresa-data-especifica').value; if (!val) return; datasAlvo.push(formatData(new Date(val + 'T12:00:00'))); }
+        document.querySelectorAll('#empresa-aba-despacho .btn-subtab').forEach(b => b.classList.remove('ativo'));
+        if (tipo !== 'especifica') document.getElementById('btn-filtro-' + tipo).classList.add('ativo');
+
+        let pedidosDia = window.todosPedidos.filter(p => datasAlvo.includes(p.data) && (p.status.includes('Aprovado') || p.status.includes('Na Rota')));
+        pedidosDia.sort((a, b) => { let dA = a.data.split('/').reverse().join('-'); let dB = b.data.split('/').reverse().join('-'); if (dA !== dB) return dA.localeCompare(dB); return a.periodo.localeCompare(b.periodo); });
+
+        if (document.getElementById('empresa-frota-disp')) { document.getElementById('empresa-frota-disp').innerText = window.listaVeiculos.filter(v => String(v.disponibilidade).toLowerCase().includes('dispon')).length; document.getElementById('empresa-frota-req').innerText = pedidosDia.reduce((sum, p) => sum + Math.ceil((parseInt(p.qtdAlunos)||0) / 43), 0); }
+
+        let htmlRegulares = ''; let htmlExtras = '';
+        pedidosDia.forEach(p => {
+          let qtdAlunos = parseInt(p.qtdAlunos) || 0; let qtdNecessaria = Math.ceil(qtdAlunos / 43);
+          let escalaPreenchida = false;
+          if (p.placa && p.placa.includes('(Mot:')) { let qtdAlocada = p.placa.split(' | ').filter(v => v.includes('(Mot:')).length; if (qtdAlocada >= qtdNecessaria) escalaPreenchida = true; }
+          let statusText = escalaPreenchida ? `<span style="color:var(--verde); font-weight:900; font-size:.75rem;">✅ Escala Preenchida</span>` : `<span style="color:var(--vermelho); font-weight:900; font-size:.75rem;">⚠️ Pendente</span>`;
+          let podeAlocar = datasPermitidasConfirmacao.includes(p.data);
+          let acaoBotao = podeAlocar ? `<button class="btn-submit" style="width:auto; margin:0; padding:6px 14px; font-size:.72rem;">Alocar Frota</button>` : `<button class="btn-submit" disabled style="width:auto; margin:0; padding:6px 14px; font-size:.72rem; opacity:.4; cursor:not-allowed;" title="Alocação permitida apenas para Hoje e Amanhã">Bloqueado (Aguarde)</button>`;
+          let interacaoCard = podeAlocar ? `cursor:pointer;` : `cursor:not-allowed; opacity:.8; filter:grayscale(40%);`;
+          let isExtra = false;
+          if (p.historico) { let regex = /\[(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2})\].*?Aprov/g; let match; let ultimaAprovacao = null; while ((match = regex.exec(p.historico)) !== null) { ultimaAprovacao = match[1]; } if (ultimaAprovacao) { let pTime = ultimaAprovacao.split(' '); let dTime = pTime[0].split('/'); let hTime = pTime[1].split(':'); let dataDaAprovacao = new Date(dTime[2], dTime[1]-1, dTime[0], hTime[0], hTime[1]); let dViagemParts = p.data.split('/'); let dataLimite17h = new Date(dViagemParts[2], dViagemParts[1]-1, dViagemParts[0], 17, 0); dataLimite17h.setDate(dataLimite17h.getDate() - 1); if (dataDaAprovacao > dataLimite17h) isExtra = true; } }
+
+          let cardHtml = `<div class="despacho-card" style="border-left:5px solid ${isExtra ? 'var(--vermelho)' : 'var(--laranja)'}; ${interacaoCard}" ${podeAlocar ? `onclick="abrirModalDespacho('${p.idLinhas[0]}')"` : ''}>
+            <div class="despacho-card-head">
+              <span class="despacho-card-evento" style="color:${isExtra ? 'var(--vermelho)' : 'var(--primary);'}">${p.evento}${isExtra ? '<span class="badge-extra">EXTRA (PÓS 17H)</span>' : ''}</span>
+              <div class="d-flex gap-2"><span class="tag-pill tag-azul">📅 ${p.data}</span><span class="tag-pill tag-roxo">${p.periodo}</span></div>
+            </div>
+            <p style="margin:4px 0; font-size:.82rem; font-weight:800;">🏫 ${p.unidade} <span style="font-weight:600; color:var(--texto-muted);">(${p.qtdAlunos} passageiros)</span></p>
+            <p style="margin:4px 0; font-size:.74rem; color:var(--texto-muted);">📍 ${p.origem} ➔ ${p.destino}</p>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <span style="font-size:.75rem; font-weight:800;">Necessário: ${qtdNecessaria} ônibus <br>${statusText}</span>
+              ${acaoBotao}
+            </div>
+          </div>`;
+          if (isExtra) htmlExtras += cardHtml; else htmlRegulares += cardHtml;
+        });
+
+        let htmlFinal = '';
+        if (!htmlRegulares && !htmlExtras) { htmlFinal = `<p style="text-align:center; padding:30px; color:var(--texto-muted); font-weight:800;">Nenhuma viagem aprovada para o(s) dia(s) selecionado(s).</p>`; }
+        else { if (htmlRegulares) htmlFinal += `<div style="font-size:.72rem; font-weight:900; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px;">📋 Roteiro Regular</div>` + htmlRegulares; if (htmlExtras) htmlFinal += `<div style="margin-top:24px; border-top:2px dashed var(--vermelho); padding-top:14px;"><div style="font-size:.72rem; font-weight:900; color:var(--vermelho); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px;">⚠️ Inclusões de Última Hora (Após 17h do dia anterior)</div>${htmlExtras}</div>`; }
+        document.getElementById('lista-despacho').innerHTML = htmlFinal;
+      }
+
+      function abrirModalDespacho(idUnico) {
+        let p = window.todosPedidos.find(x => String(x.idLinhas[0]) === String(idUnico)); if (!p) return;
+        window.viagemEmAlocacao = p;
+        let qtdAlunos = parseInt(p.qtdAlunos) || 0; let qtdNecessaria = Math.ceil(qtdAlunos / 43);
+        document.getElementById('desp-view-evento').innerText = p.evento; document.getElementById('desp-view-escola').innerText = p.unidade; document.getElementById('desp-view-alunos').innerText = p.qtdAlunos; document.getElementById('desp-view-rota').innerText = `${p.origem} ➔ ${p.destino}`; document.getElementById('desp-view-saida').innerText = p.idaPartida; document.getElementById('desp-view-qtd').innerText = qtdNecessaria; document.getElementById('desp-id-linhas').value = JSON.stringify(p.idLinhas); document.getElementById('desp-qtd-necessaria').value = qtdNecessaria;
+
+        let viagensMesmoTurno = window.todosPedidos.filter(x => x.data === p.data && x.periodo === p.periodo && x.placa && String(x.idLinhas[0]) !== String(idUnico) && x.status.includes('Aprovado'));
+        let veiculosEmRota = [];
+        viagensMesmoTurno.forEach(vmt => { let placas = vmt.placa.split(' | '); placas.forEach(pl => { if (pl.includes('(Mot:')) { let soPlaca = pl.split('(Mot:')[0].trim(); if (!veiculosEmRota.find(vr => vr.placa === soPlaca)) veiculosEmRota.push({placa: soPlaca, escola: vmt.unidade}); } }); });
+
+        let optVeiculos = '<option value="">Selecione o Veículo...</option>';
+        if (veiculosEmRota.length > 0) { optVeiculos += `<optgroup label="🔄 COMPARTILHAR ROTA">`; veiculosEmRota.forEach(vr => { optVeiculos += `<option value="${vr.placa}">COMPARTILHAR: ${vr.placa} (Passará em ${vr.escola})</option>`; }); optVeiculos += `</optgroup>`; }
+        optVeiculos += `<optgroup label="🚌 FROTA LIVRE">`; window.listaVeiculos.forEach(v => { if (!veiculosEmRota.find(vr => vr.placa === v.placa)) optVeiculos += `<option value="${v.placa}">${v.veiculo} - ${v.placa}</option>`; }); optVeiculos += `</optgroup>`;
+        let optMotoristas = '<option value="">Selecione o Motorista...</option>'; window.listaMotoristas.forEach(m => { if (m.status === 'Ativo') optMotoristas += `<option value="${m.nome}">${m.nome}</option>`; });
+
+        let camposSelecaoHtml = ''; let dadosEscalaExistente = p.placa ? p.placa.split(' | ') : [];
+        for (let i = 0; i < qtdNecessaria; i++) {
+          let selV = '', selM = '';
+          if (dadosEscalaExistente[i] && dadosEscalaExistente[i].includes('(Mot:')) { let partes = dadosEscalaExistente[i].split('(Mot:'); selV = partes[0].trim(); selM = partes[1].replace(')', '').trim(); }
+          camposSelecaoHtml += `<div style="background:var(--azul-claro); border:1px solid var(--borda); border-radius:11px; padding:12px; margin-top:10px;">
+            <div class="form-row">
+              <div class="form-group"><label>🚌 Veículo ${i+1}</label><select class="modal-sel-veiculo" onchange="validarLogisticaVeiculo(this,${i})" data-val="${selV}">${optVeiculos}</select></div>
+              <div class="form-group"><label>👤 Motorista ${i+1}</label><select class="modal-sel-motorista" data-val="${selM}">${optMotoristas}</select></div>
+            </div>
+            <div id="logistica-alerta-${i}" style="font-size:.72rem; margin-top:6px; display:none; padding:7px 10px; border-radius:8px;"></div>
+          </div>`;
+        }
+        document.getElementById('container-selecao-despacho').innerHTML = camposSelecaoHtml;
+        setTimeout(() => { document.querySelectorAll('#container-selecao-despacho select[data-val]').forEach(sel => { if (sel.dataset.val) sel.value = sel.dataset.val; }); }, 50);
+        abrirModal('modal-despacho-empresa');
+      }
+
+      function validarLogisticaVeiculo(selectEl, index) {
+        const placa = selectEl.value; const alertaBox = document.getElementById(`logistica-alerta-${index}`); const viagemAtual = window.viagemEmAlocacao;
+        if (!placa) { alertaBox.style.display = 'none'; return; }
+        let viagensMesmoTurno = window.todosPedidos.filter(p => p.data === viagemAtual.data && p.periodo === viagemAtual.periodo && p.placa && p.placa.includes(placa) && String(p.idLinhas[0]) !== String(viagemAtual.idLinhas[0]));
+        if (viagensMesmoTurno.length > 0) {
+          let alunosJa = viagensMesmoTurno.reduce((sum, p) => sum + (parseInt(p.qtdAlunos)||0), 0); let alunosDestaViagem = parseInt(viagemAtual.qtdAlunos)||0; let total = alunosJa + alunosDestaViagem;
+          if (total > 43) { alertaBox.innerHTML = `❌ <strong>LOTADO:</strong> Total combinado (${total}) ultrapassa o limite de 43.`; alertaBox.style.background = '#fee2e2'; alertaBox.style.color = '#7f1d1d'; alertaBox.style.display = 'block'; selectEl.value = ''; return; }
+          let escolas = viagensMesmoTurno.map(x => x.unidade).join(', ');
+          alertaBox.innerHTML = `🔄 <strong>ROTA COMPARTILHADA:</strong> Passará em: <strong>${escolas}</strong>. Lotação: ${total}/43.`; alertaBox.style.background = '#dbeafe'; alertaBox.style.color = '#1e3a8a'; alertaBox.style.display = 'block';
+          try { let plInfo = viagensMesmoTurno[0].placa.split(' | ').find(x => x.includes(placa)); if (plInfo && plInfo.includes('(Mot:')) { let mot = plInfo.split('(Mot:')[1].replace(')','').trim(); let selMot = selectEl.parentElement.nextElementSibling.querySelector('.modal-sel-motorista'); if (selMot) selMot.value = mot; } } catch(e) {}
+          return;
+        }
+        let viagemManha = window.todosPedidos.find(p => p.data === viagemAtual.data && p.periodo === 'Manhã' && p.placa && p.placa.includes(placa) && String(p.idLinhas[0]) !== String(viagemAtual.idLinhas[0]));
+        if (viagemAtual.periodo === 'Tarde' && viagemManha) {
+          let horarioFimManha = viagemManha.voltaChegada || "12:00"; let horarioInicioTarde = viagemAtual.idaPartida;
+          let [hF, mF] = horarioFimManha.split(':').map(Number); let [hI, mI] = horarioInicioTarde.split(':').map(Number); let diffMinutos = (hI*60+mI) - (hF*60+mF);
+          if (diffMinutos < 120) { alertaBox.innerHTML = `❌ <strong>BLOQUEADO:</strong> Intervalo de apenas ${diffMinutos}min (Mínimo 2h).`; alertaBox.style.background = '#fee2e2'; alertaBox.style.color = '#7f1d1d'; alertaBox.style.display = 'block'; selectEl.value = ''; return; }
+          alertaBox.innerHTML = `⏳ Verificando viabilidade de deslocamento real (com trânsito)...`; alertaBox.style.background = '#fef9c3'; alertaBox.style.color = '#854d0e'; alertaBox.style.display = 'block';
+          google.script.run.withSuccessHandler(res => {
+            if (res.sucesso) { let tempoLivreSobra = diffMinutos - res.tempoMinutos - 40; if (tempoLivreSobra < 0) { alertaBox.innerHTML = `⚠️ <strong>LOGÍSTICA APERTADA:</strong> ${res.distanciaKm}km / ${res.tempoMinutos}min com trânsito. Sem tempo para almoço.`; alertaBox.style.background = '#fef9c3'; alertaBox.style.color = '#854d0e'; } else { alertaBox.innerHTML = `✅ <strong>OK:</strong> ${res.distanciaKm}km (${res.tempoMinutos}min). Sobram ${tempoLivreSobra}min para almoço.`; alertaBox.style.background = '#dcfce7'; alertaBox.style.color = '#166534'; } } else { alertaBox.innerHTML = `⚠️ ${res.erro}`; }
+          }).obterDadosLogistica(viagemManha.destino, viagemAtual.origem, viagemManha.data, horarioFimManha);
+        } else { alertaBox.style.display = 'none'; }
+      }
+
+      function confirmarDespachoModal() {
+        let idLinhasStr = document.getElementById('desp-id-linhas').value; let qtdNecessaria = parseInt(document.getElementById('desp-qtd-necessaria').value);
+        const selectsVeiculo = document.querySelectorAll('.modal-sel-veiculo'); const selectsMotorista = document.querySelectorAll('.modal-sel-motorista');
+        let placasSelecionadas = []; let escalaCompleta = []; let erroVazio = false;
+        for (let i = 0; i < qtdNecessaria; i++) { let v = selectsVeiculo[i].value; let m = selectsMotorista[i].value; if (!v || !m) { erroVazio = true; break; } if (placasSelecionadas.includes(v)) { mostrarToast(`Erro: Você selecionou a placa ${v} mais de uma vez.`, 'error'); return; } placasSelecionadas.push(v); escalaCompleta.push(`${v} (Mot: ${m})`); }
+        if (erroVazio) { mostrarToast(`Atenção: Preencha todos os ${qtdNecessaria} veículos e motoristas.`, 'warning'); return; }
+        let btn = document.getElementById('btn-confirmar-despacho'); btn.disabled = true; btn.innerText = 'Gravando Escala...';
+        let textoFinalPlacas = escalaCompleta.join(' | ');
+        let payload = { idLinhas: JSON.parse(idLinhasStr), status: 'Aprovado (Na Rota)', placa: textoFinalPlacas, justificativa: 'Escala completa confirmada pela Empresa.' };
+        if (window.MODO_SIMULACAO) { let p = window.todosPedidos.find(x => JSON.stringify(x.idLinhas) === JSON.stringify(payload.idLinhas)); if (p) { p.status = payload.status; p.placa = payload.placa; } fecharModal('modal-despacho-empresa'); window.pedidosFiltrados = [...window.todosPedidos]; atualizarKPIsEFiltrosUser(); renderizarVisaoEscola(); if (window.isAdmin) renderizarTabelaAdmin(); let abaAtivaId = 'hoje'; let btnAtivo = document.querySelector('#empresa-aba-despacho .btn-subtab.ativo'); if (btnAtivo) abaAtivaId = btnAtivo.id.replace('btn-filtro-', ''); filtrarDespachoData(abaAtivaId); mostrarToast('💻 SIMULAÇÃO: Escala testada e salva na memória.', 'warning'); btn.disabled = false; btn.innerText = '✅ Confirmar Escala Total'; return; }
+        google.script.run.withSuccessHandler((r) => { if (r.sucesso) { mostrarToast('Escala salva com sucesso!', 'success'); fecharModal('modal-despacho-empresa'); carregarCards(); } else { mostrarToast('Erro: ' + r.erro, 'error'); } btn.disabled = false; btn.innerText = '✅ Confirmar Escala Total'; }).atualizarStatusPedido(payload);
+      }
+
+      function filtrarVeiculosEmpresa() {
+        const busca = document.getElementById('filtro-v-busca-emp').value.toLowerCase(); const tipo = document.getElementById('filtro-v-tipo-emp').value; const disp = document.getElementById('filtro-v-disp-emp').value;
+        document.querySelectorAll('#lista-veiculos-empresa .card-veiculo').forEach(card => { let mostrar = true; if (busca && !card.getAttribute('data-busca').includes(busca)) mostrar = false; if (tipo && card.getAttribute('data-tipo') !== tipo) mostrar = false; if (disp && card.getAttribute('data-disp') !== disp) mostrar = false; card.style.display = mostrar ? '' : 'none'; });
+      }
+
+      function abrirModal(id) { document.getElementById(id).style.display = 'flex'; if (id === 'modal-formulario') aplicarRegrasDoEvento(); if (id === 'modal-frota-data') { let el = document.getElementById('modal-frota-padrao-txt'); if (el) el.innerText = window.totalFrotaAtiva || 0; } }
+      function fecharModal(id) { document.getElementById(id).style.display = 'none'; document.getElementById('form-edicao-linhas').value = ''; }
+      window.onclick = function(e) { if (e.target.classList.contains('modal-overlay')) { e.target.style.display = 'none'; document.getElementById('form-edicao-linhas').value = ''; } }
+
+      function mudouUnidade() {
+        const u = document.getElementById('form-unidade').value;
+        window.turmasDaUnidade = window.turmasPorUnidade[u] || [];
+        let enderecoEncontrado = window.enderecosPorUnidade[u] || "";
+        if (!document.getElementById('form-edicao-linhas').value || document.getElementById('form-origem').value === "") {
+          document.getElementById('form-origem').value = enderecoEncontrado || u;
+        }
+        aplicarRegrasDoEvento();
+      }
+      function toggleQtdAdaptado() { let chk = document.getElementById('form-acess').checked; let grp = document.getElementById('grupo-qtd-adaptado'); let inp = document.getElementById('form-qtd-adaptado'); if (chk) { grp.style.display = 'flex'; inp.required = true; } else { grp.style.display = 'none'; inp.required = false; inp.value = ''; } }
+
+      // ==========================================
+      // REGRAS DO FORMULÁRIO E CALENDÁRIO
+      // ==========================================
+      function configurarCalendarioAuto() {
+        const campoData = document.getElementById('form-data'); let limiteDate = new Date(); if (!window.isAdmin) { limiteDate.setDate(limiteDate.getDate() + 3); }
+        campoData.min = `${limiteDate.getFullYear()}-${String(limiteDate.getMonth()+1).padStart(2,'0')}-${String(limiteDate.getDate()).padStart(2,'0')}`;
+        campoData.addEventListener('input', function() {
+          if (!this.value) return; const dataSel = new Date(this.value + 'T00:00:00'); const diaSemana = dataSel.getDay();
+          if (diaSemana === 0 || diaSemana === 6) { mostrarToast('Finais de semana não permitidos.', 'error'); this.value = ''; return; }
+          let dataBlock = new Date(); dataBlock.setHours(0,0,0,0); dataBlock.setDate(dataBlock.getDate() + 3);
+          if (dataSel < dataBlock && !window.isAdmin) { mostrarToast('A escola deve agendar com no mínimo 3 dias de antecedência.', 'error'); this.value = ''; }
+        });
+        document.getElementById('form-ida').addEventListener('change', function() {
+          let v = this.value; if (v) { let [hStr, mStr] = v.split(':'); let h = parseInt(hStr); let m = parseInt(mStr); let p = document.getElementById('form-periodo'); let resto = m % 5; if (resto !== 0) { m = m + (5 - resto); if (m >= 60) { m = 0; h++; } this.value = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'); mostrarToast('Atenção: Horário ajustado para intervalos de 5 em 5 minutos.', 'warning'); } if (h >= 18) { mostrarToast('Agendamentos noturnos não permitidos.', 'error'); this.value = ''; p.value = ''; } else if (h < 12) { p.value = "Manhã"; } else { p.value = "Tarde"; } }
+        });
+      }
+
+      function aplicarRegrasDoEvento() {
+        const evento = document.getElementById('form-evento').value; const destino = document.getElementById('form-destino'); const fS = document.getElementById('form-filme-select'); const obsG = document.getElementById('grupo-obs'); const inputObs = document.getElementById('form-obs'); const grupoTituloOutros = document.getElementById('grupo-titulo-outros'); const inputTituloOutros = document.getElementById('form-titulo-outros');
+        if (window.locaisEventos[evento]) { destino.value = window.locaisEventos[evento]; } else if (evento === 'Outros' && !document.getElementById('form-edicao-linhas').value) { let isAutoFilled = Object.values(window.locaisEventos).includes(destino.value); if (isAutoFilled) destino.value = ''; }
+        document.getElementById('div-detalhes').style.display = 'none'; document.getElementById('grupo-filme-cauim').style.display = 'none'; document.getElementById('grupo-detalhe-texto').style.display = 'none'; fS.required = false;
+        if (evento === 'Outros') { obsG.style.display = 'flex'; inputObs.required = true; grupoTituloOutros.style.display = 'block'; inputTituloOutros.required = true; } else { obsG.style.display = 'none'; inputObs.required = false; grupoTituloOutros.style.display = 'none'; inputTituloOutros.required = false; }
+        if (evento.toLowerCase().includes('cauim')) { document.getElementById('div-detalhes').style.display = 'flex'; document.getElementById('grupo-filme-cauim').style.display = 'flex'; fS.required = true; fS.innerHTML = '<option value="">Selecione o Filme...</option>'; window.catalogoFilmes.forEach(item => { fS.innerHTML += `<option value="${item.filme}">${item.filme}</option>`; }); }
+        else if (evento !== 'Outros' && evento !== '') { document.getElementById('div-detalhes').style.display = 'flex'; document.getElementById('grupo-detalhe-texto').style.display = 'flex'; }
+        renderizarTurmas('checkbox');
+      }
+
+      function renderizarTurmas(tipoInput) {
+        const box = document.getElementById('box-turmas'); if (!box) return;
+        let lista = [...window.turmasDaUnidade]; lista.push({nome:'ALUNOS VARIADOS (Múltiplas Turmas)',ciclo:'VARIADOS',qtd:0});
+        box.innerHTML = ''; let html = '';
+        lista.forEach((turmaObj, index) => { const id = `turma-${index}`; html += `<label class="turma-row"><input type="${tipoInput}" name="turma-selecao" id="${id}" value="${turmaObj.nome}" data-ciclo="${turmaObj.ciclo}" data-qtd="${turmaObj.qtd}" onchange="validarMistura(this)" style="margin:0 10px 0 0; width:18px; height:18px; cursor:pointer;"><span style="font-size:.82rem; flex:1;">${turmaObj.nome} ${turmaObj.qtd > 0 ? '('+turmaObj.qtd+' alunos)' : ''}</span></label>`; });
+        box.innerHTML += html; atualizarTurmaHidden();
+      }
+
+      function validarMistura(elementoClicado = null) {
+        const selecionadasInputs = Array.from(document.querySelectorAll('input[name="turma-selecao"]:checked')); let temInfantil = false, temFund1 = false, temFund2 = false;
+        selecionadasInputs.forEach(el => { const ciclo = el.getAttribute('data-ciclo') || ''; if (ciclo.includes('INFANTIL')) temInfantil = true; if (ciclo.includes('FUNDAM')) { if (ciclo.includes('1')||ciclo.includes('2')||ciclo.includes('3')||ciclo.includes('4')||ciclo.includes('5')||ciclo.includes('INICIAIS')) temFund1 = true; if (ciclo.includes('6')||ciclo.includes('7')||ciclo.includes('8')||ciclo.includes('FINAIS')) temFund2 = true; } });
+        let erroMistura = ""; if (temInfantil && (temFund1 || temFund2)) erroMistura = 'Atenção: Não misture turmas da Educação Infantil com o Ensino Fundamental.'; else if (temFund1 && temFund2) erroMistura = 'Atenção: Não misture turmas do Fundamental I com o Fundamental II.';
+        if (erroMistura !== "" && elementoClicado) { mostrarToast(erroMistura, 'warning'); elementoClicado.checked = false; return validarMistura(); }
+        if (elementoClicado && elementoClicado.getAttribute('data-ciclo') === 'VARIADOS' && elementoClicado.checked) { mostrarToast("Turma Variada: Digite o total de alunos.", "warning"); document.getElementById('form-qtd').focus(); }
+        atualizarTurmaHidden();
+      }
+
+      function atualizarTurmaHidden() {
+        const selecionados = Array.from(document.querySelectorAll('input[name="turma-selecao"]:checked')); let totalQtd = 0; let turmasArray = [];
+        selecionados.forEach(el => { let q = parseInt(el.getAttribute('data-qtd')) || 0; totalQtd += q; turmasArray.push({nome:el.value,qtd:q}); });
+        document.getElementById('form-turmas').value = JSON.stringify(turmasArray);
+        if (!document.getElementById('form-edicao-linhas').value) { document.getElementById('form-qtd').value = totalQtd; calcularLotacaoTempoReal(); }
+        if (turmasArray.length === 0) document.getElementById('form-turmas').setCustomValidity("Selecione pelo menos uma turma."); else document.getElementById('form-turmas').setCustomValidity("");
+      }
+
+      function calcularLotacaoTempoReal() {
+        const input = document.getElementById('form-qtd'); const aviso = document.getElementById('aviso-lotacao'); if (!aviso || !input) return;
+        let qtd = parseInt(input.value) || 0; if (qtd <= 0) { aviso.style.display = 'none'; return; }
+        let qtdOnibus = Math.ceil(qtd / 43); let capacidadeTotal = qtdOnibus * 43; let vagasSobrando = capacidadeTotal - qtd;
+        aviso.style.display = 'block';
+        if (vagasSobrando > 0) { aviso.innerHTML = `🚌 <strong>${qtdOnibus} ônibus necessário${qtdOnibus>1?'s':''}.</strong> Sobram <strong>${vagasSobrando} vagas</strong>.`; aviso.style.background = 'var(--azul-claro)'; aviso.style.color = 'var(--primary)'; aviso.style.borderColor = 'var(--borda)'; }
+        else { aviso.innerHTML = `🚌 <strong>${qtdOnibus} ônibus necessário${qtdOnibus>1?'s':''}.</strong> Lotação exata (0 vagas sobrando).`; aviso.style.background = '#dcfce7'; aviso.style.color = '#166534'; aviso.style.borderColor = '#86efac'; }
+      }
+
+      function getFrotaBasePorPeriodo(periodo) {
+        // Retorna a frota padrão do período (manhã ou tarde)
+        return periodo === 'Manhã' ? (window.frotaManha || 6) : (window.frotaTarde || 6);
+      }
+
+      function getOnibusDisponiveisNoPeriodo(dataISO, periodo) {
+        // 1. Determina a frota base do período
+        let frotaBase = getFrotaBasePorPeriodo(periodo);
+
+        // 2. Verifica se há exceção configurada para esta data/período
+        if (window.excecoesFrotaPorData && window.excecoesFrotaPorData.length > 0) {
+          let excecao = window.excecoesFrotaPorData.find(ex => {
+            if (!ex.ativo) return false;
+            let matchPeriodo = ex.periodo === 'Integral' || ex.periodo === periodo;
+            if (!matchPeriodo) return false;
+            let dFim = ex.dataFim || ex.dataInicio;
+            return dataISO >= ex.dataInicio && dataISO <= dFim;
+          });
+          if (excecao) frotaBase = parseInt(excecao.qtdOnibus) || 0;
+        }
+
+        // 3. Subtrai ônibus já comprometidos por pedidos ativos neste período
+        let usados = window.busesUsedByDatePeriod[`${dataISO}_${periodo}`] || 0;
+        let disponiveis = frotaBase - usados;
+        return disponiveis < 0 ? 0 : disponiveis;
+      }
+
+      function renderizarMes() {
+        const divDias = document.getElementById('cal-dias'); divDias.innerHTML = ''; const ano = window.calDataAtual.getFullYear(); const mes = window.calDataAtual.getMonth();
+        const mesesNomes = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+        document.getElementById('cal-mes-ano').innerText = `${mesesNomes[mes]} ${ano}`; let primeiroDia = new Date(ano,mes,1).getDay(); let diasNoMes = new Date(ano,mes+1,0).getDate();
+        for (let i = 0; i < primeiroDia; i++) divDias.innerHTML += `<div class="cal-day empty"></div>`; window.calendarioGroups = [];
+        let hoje = new Date(); hoje.setHours(0,0,0,0);
+        for (let dia = 1; dia <= diasNoMes; dia++) {
+          let dataStr = `${ano}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+          let dataDia = new Date(dataStr + 'T00:00:00');
+          let isPassado = dataDia < hoje;
+          let evtsDia = window.calendarioEventos.filter(e => e.dataISO === dataStr);
+          let onibusManha = getOnibusDisponiveisNoPeriodo(dataStr,'Manhã');
+          let onibusTarde = getOnibusDisponiveisNoPeriodo(dataStr,'Tarde');
+          let totalFrota = window.totalFrotaAtiva || 1;
+
+          // Cabeçalho do período com emoji, número disponível e barra de cor
+          function barraDisp(qtd, nomePeriodo) {
+            let total = totalFrota;
+            let pct = Math.min(100, Math.round((qtd / (total || 1)) * 100));
+            let cor = qtd === 0 ? 'var(--vermelho)' : pct < 40 ? 'var(--laranja)' : 'var(--verde)';
+            let txt = qtd === 0 ? 'Sem ônibus' : `🚌${qtd}`;
+            let title = qtd === 0
+              ? `${nomePeriodo}: nenhum ônibus disponível`
+              : `${nomePeriodo}: ${qtd} de ${total} ônibus livres`;
+            return `<div style="margin-bottom:3px;" title="${title}">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:.6rem;font-weight:900;margin-bottom:2px;">
+                <span style="color:var(--texto-muted);">${nomePeriodo}</span>
+                <span style="color:${cor};">${txt}</span>
+              </div>
+              <div style="height:3px;background:var(--borda);border-radius:2px;overflow:hidden;">
+                <div style="height:100%;width:${pct}%;background:${cor};border-radius:2px;"></div>
+              </div>
+            </div>`;
+          }
+
+          let manhaHtml = `<div class="cal-period">`;
+          let tardeHtml = `<div class="cal-period">`;
+          if (!isPassado) {
+            manhaHtml += barraDisp(onibusManha, 'Manhã');
+            tardeHtml  += barraDisp(onibusTarde, 'Tarde');
+          } else {
+            manhaHtml += `<div style="font-size:.6rem;color:var(--texto-muted);font-weight:700;margin-bottom:3px;">Manhã</div>`;
+            tardeHtml  += `<div style="font-size:.6rem;color:var(--texto-muted);font-weight:700;margin-bottom:3px;">Tarde</div>`;
+          }
+
+          let manhaEvts = evtsDia.filter(e => e.periodo.toLowerCase().includes('manh'));
+          let tardeEvts = evtsDia.filter(e => !e.periodo.toLowerCase().includes('manh'));
+
+          function getGroupedHtml(evtsArray) {
+            let groups = {}; evtsArray.forEach(e => { if (!groups[e.evento]) groups[e.evento] = []; groups[e.evento].push(e); }); let html = '';
+            Object.keys(groups).forEach(eventoNome => { let grupo = groups[eventoNome]; let allEsgotado = grupo.every(x => x.titulo.includes('ESGOTADO') || x.titulo.includes('LOTADO')); let bgCor = allEsgotado ? 'var(--vermelho)' : getEventColor(`[${eventoNome}]`); let gIndex = window.calendarioGroups.length; window.calendarioGroups.push(grupo); html += `<div class="cal-event-dot" style="background:${bgCor};" onclick="event.stopPropagation(); abrirDetalhesEventoMultiplo(${gIndex})" title="${eventoNome}">${eventoNome}</div>`; }); return html;
+          }
+
+          manhaHtml += getGroupedHtml(manhaEvts);
+          tardeHtml += getGroupedHtml(tardeEvts);
+
+          if (!isPassado) {
+            let btnManhaStr = onibusManha > 0
+              ? `<div class="cal-event-dot" style="background:var(--verde); margin-top:4px; border:1px dashed rgba(255,255,255,.5);" onclick="abrirFormularioPeloCalendario('${dataStr}','Manhã',${onibusManha})">+ Solicitar</div>`
+              : `<div class="cal-event-dot" style="background:var(--input-disabled); color:var(--texto-muted); margin-top:4px; cursor:not-allowed; opacity:.7;">Indisponível</div>`;
+            let btnTardeStr = onibusTarde > 0
+              ? `<div class="cal-event-dot" style="background:var(--verde); margin-top:4px; border:1px dashed rgba(255,255,255,.5);" onclick="abrirFormularioPeloCalendario('${dataStr}','Tarde',${onibusTarde})">+ Solicitar</div>`
+              : `<div class="cal-event-dot" style="background:var(--input-disabled); color:var(--texto-muted); margin-top:4px; cursor:not-allowed; opacity:.7;">Indisponível</div>`;
+            manhaHtml += btnManhaStr;
+            tardeHtml  += btnTardeStr;
+          }
+
+          manhaHtml += `</div>`; tardeHtml += `</div>`;
+          let estiloPassado = isPassado ? 'opacity:.45; filter:grayscale(50%);' : '';
+          divDias.innerHTML += `<div class="cal-day" style="${estiloPassado}"><div class="cal-date">${dia}</div>${manhaHtml}${tardeHtml}</div>`;
+        }
+      }
+      function mudarMes(step) { window.calDataAtual.setMonth(window.calDataAtual.getMonth() + step); renderizarMes(); }
+
+      function abrirDetalhesEventoMultiplo(gIndex) {
+        let grupo = window.calendarioGroups[gIndex]; let evNome = grupo[0].evento; let dataB = grupo[0].dataISO.split('-').reverse().join('/'); let periodoB = grupo[0].periodo.toLowerCase().includes('manh') ? 'Manhã' : 'Tarde';
+        document.getElementById('detalhe-titulo-multiplo').innerText = `${evNome} — ${dataB} (${periodoB})`;
+        let customMedia = null; if (window.midiaEventos) { let foundKey = Object.keys(window.midiaEventos).find(k => k.trim().toLowerCase() === evNome.trim().toLowerCase()); if (foundKey) customMedia = window.midiaEventos[foundKey]; }
+        let mediaHtml = '';
+        if (customMedia && (customMedia.img || customMedia.txt || customMedia.link)) {
+          mediaHtml += `<div style="text-align:center; margin-bottom:14px; background:var(--azul-claro); padding:14px; border-radius:12px; border:1px solid var(--borda);">`;
+          if (customMedia.img) mediaHtml += `<img src="${customMedia.img}" style="max-width:100%; max-height:240px; border-radius:10px; margin-bottom:10px; box-shadow:0 4px 12px rgba(0,0,0,.12);">`;
+          if (customMedia.txt) mediaHtml += `<div class="ql-editor" style="padding:0; text-align:left; margin:0 0 12px 0; color:var(--texto);">${customMedia.txt}</div>`;
+          if (customMedia.link) { let linksArr = []; try { linksArr = JSON.parse(customMedia.link); if (!Array.isArray(linksArr)) linksArr = [{nome:'Anexo',url:customMedia.link}]; } catch(e) { linksArr = [{nome:'Anexo',url:customMedia.link}]; } if (linksArr.length > 0) { mediaHtml += `<div class="d-flex flex-wrap gap-2 justify-content-center">`; linksArr.forEach(lk => { mediaHtml += `<a href="${lk.url}" target="_blank" class="btn-submit" style="display:inline-block; background:var(--laranja); border-color:var(--laranja); color:#fff; text-decoration:none; width:auto; padding:7px 18px; font-size:.75rem; margin:0;">📎 ${lk.nome}</a>`; }); mediaHtml += `</div>`; } }
+          mediaHtml += `</div>`;
+        }
+        document.getElementById('container-midia-evento').innerHTML = mediaHtml;
+
+        let container = document.getElementById('lista-sub-eventos'); container.innerHTML = '';
+        let onibusDisp = getOnibusDisponiveisNoPeriodo(grupo[0].dataISO, grupo[0].periodo.toLowerCase().includes('manh') ? 'Manhã' : 'Tarde');
+        grupo.forEach((e, eIndex) => {
+          let isEsgotado = e.titulo.includes('ESGOTADO') || e.titulo.includes('LOTADO'); let cleanTitle = e.titulo.split(' 🟢')[0].split(' 🔴')[0].replace(`[${e.evento}] `,'').trim(); let vagasTxt = e.capacidade > 0 ? (e.vagasLivres > 0 ? `${e.vagasLivres} vagas` : 'Esgotado') : 'Ilimitado';
+          let btnState = (isEsgotado || onibusDisp <= 0) ? `disabled style="background:var(--borda); color:var(--texto); cursor:not-allowed;"` : `style="background:var(--verde); border-color:var(--verde); color:#fff;" onclick="iniciarSolicitacaoPreCarregada(${gIndex},${eIndex})"`;
+          let btnText = isEsgotado ? 'Evento Lotado' : (onibusDisp <= 0 ? 'Sem Ônibus' : 'Fazer Solicitação');
+          container.innerHTML += `<div style="background:var(--fundo); padding:12px; border-radius:11px; border-left:4px solid ${isEsgotado ? 'var(--vermelho)' : 'var(--primary)'}; border:1px solid var(--borda);"><h4 style="margin:0 0 5px 0; font-size:.9rem;">${cleanTitle || evNome}</h4><p style="margin:2px 0; font-size:.75rem;"><strong>Local:</strong> ${e.local||'-'}</p><p style="margin:2px 0; font-size:.75rem;"><strong>Vagas no Evento:</strong> ${vagasTxt}</p><p style="margin:2px 0 8px 0; font-size:.72rem; color:var(--texto-muted);">${e.sinopse||''}</p><button class="btn-submit" ${btnState} style="margin:0; width:auto; padding:7px 18px; font-size:.75rem;">${btnText}</button></div>`;
+        });
+        abrirModal('modal-detalhes-evento');
+      }
+
+      function iniciarSolicitacaoPreCarregada(gIndex, eIndex) {
+        let e = window.calendarioGroups[gIndex][eIndex];
+        let d = new Date(e.dataISO + 'T00:00:00'); let limite = new Date(); limite.setHours(0,0,0,0); limite.setDate(limite.getDate() + 3);
+        if (d < limite && !window.isAdmin) { fecharModal('modal-detalhes-evento'); return mostrarToast("Agendamentos com mínimo 3 dias de antecedência.", "error"); }
+        fecharModal('modal-detalhes-evento'); document.getElementById('form-evento').value = e.evento; document.getElementById('form-data').value = e.dataISO; document.getElementById('form-periodo').value = e.periodo; document.getElementById('form-destino').value = e.local;
+        abrirModal('modal-formulario'); mudouUnidade();
+        setTimeout(() => { if (e.evento.toLowerCase().includes('cauim')) { let cleanTitle = e.titulo.split(' 🟢')[0].split(' 🔴')[0].replace(`[${e.evento}] `,'').trim(); let sel = document.getElementById('form-filme-select'); for (let i=0; i<sel.options.length; i++) { if (sel.options[i].value === cleanTitle) { sel.selectedIndex = i; break; } } } else if (e.evento !== 'Outros') { let cleanTitle = e.titulo.split(' 🟢')[0].split(' 🔴')[0].replace(`[${e.evento}] `,'').trim(); document.getElementById('form-detalhe').value = cleanTitle; } }, 100);
+      }
+
+      function abrirFormularioPeloCalendario(dataISO, periodo, onibusDisponiveis) {
+        if (onibusDisponiveis <= 0) { mostrarToast(`Sem ônibus disponíveis para a ${periodo.toLowerCase()} nesta data.`, 'error'); return; }
+        let d = new Date(dataISO + 'T00:00:00'); let limite = new Date(); limite.setHours(0,0,0,0); limite.setDate(limite.getDate() + 3);
+        if (d < limite && !window.isAdmin) { mostrarToast("Agendamentos com mínimo 3 dias de antecedência.", "error"); return; }
+        document.getElementById('formPedido').reset(); document.getElementById('form-data').value = dataISO; document.getElementById('form-periodo').value = periodo;
+        abrirModal('modal-formulario'); mudouUnidade();
+        mostrarToast(`Agendando para ${periodo}. Disponibilidade: ${onibusDisponiveis} ônibus.`, 'success');
+      }
+
+      // ==========================================
+      // CARDS, ACOMPANHAMENTO E VISÃO DETALHADA
+      // ==========================================
+      window.pedidoAtualEdicaoOriginal = null;
+
+      function carregarCards() {
+        const loading = document.getElementById('loading-cards'); const containerCards = document.getElementById('meus-cards'); const tbodyLista = document.getElementById('tabela-escola-body');
+        loading.style.display = 'block'; containerCards.innerHTML = ''; if (tbodyLista) tbodyLista.innerHTML = '';
+        google.script.run.withFailureHandler(erro => { loading.innerHTML = `<p style="color:var(--laranja);">Erro de Conexão: ${erro.message}</p>`; }).withSuccessHandler(res => {
+          loading.style.display = 'none';
+          if (!res || res.erro) { containerCards.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:var(--laranja);">${res ? res.erro : 'Erro no servidor'}</p>`; return; }
+          if (!res.dados || res.dados.length === 0) { containerCards.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--texto-muted); font-weight:800;">Nenhum pedido cadastrado.</p>'; }
+          else {
+            window.todosPedidos = res.dados;
+            if (window.simulandoEscola) { let escAlvo = document.getElementById('form-unidade').value; window.pedidosDaEscolaSimulada = window.todosPedidos.filter(p => p.unidade.toLowerCase() === escAlvo.toLowerCase()); window.pedidosFiltrados = [...window.pedidosDaEscolaSimulada]; } else { window.pedidosFiltrados = [...res.dados]; }
+            window.busesUsedByDatePeriod = {};
+            window.todosPedidos.forEach(p => {
+              let st = p.status.toLowerCase();
+              // Somente recusado e cancelado devolvem os ônibus ao pool
+              // Qualquer outro status (Em Análise, Aprovado, Na Rota...) desconta
+              if (st.includes('cancel') || st.includes('recus') || st.includes('reprov')) return;
+              let dIso = p.data.split('/').reverse().join('-');
+              let per = p.periodo.includes('Manh') ? 'Manhã' : 'Tarde';
+              let key = dIso + '_' + per;
+              let buses = Math.ceil((parseInt(p.qtdAlunos) || 0) / 43); // padronizado em 43
+              window.busesUsedByDatePeriod[key] = (window.busesUsedByDatePeriod[key] || 0) + buses;
+            });
+            atualizarKPIsEFiltrosUser(window.simulandoEscola ? window.pedidosDaEscolaSimulada : window.todosPedidos); renderizarVisaoEscola(); renderizarMes();
+          }
+          if (window.isAdmin) { renderizarTabelaAdmin(); carregarUsuarios(); carregarEstruturasDinamicas(); carregarConfiguracoes(); }
+        }).getPedidosParaCards();
+      }
+
+      function atualizarKPIsEFiltrosUser(baseArray = window.todosPedidos) {
+        let qtdEmAnalise = 0, qtdAprov = 0, qtdRecusados = 0; let fDestino = new Set(), fStatus = new Set(), fTurmas = new Set();
+        baseArray.forEach(p => { let sTxt = String(p.status||'').toLowerCase(); if (sTxt.includes('análise')||sTxt.includes('analise')||sTxt.includes('novo')) qtdEmAnalise++; else if (sTxt.includes('aprov')||sTxt.includes('conclu')||sTxt.includes('rota')) qtdAprov++; else if (sTxt.includes('recus')||sTxt.includes('reprov')||sTxt.includes('cancel')) qtdRecusados++; fDestino.add(p.evento); fStatus.add(p.status); let t = p.turmas.split(', '); t.forEach(turma => { if (turma.trim()!=='') fTurmas.add(turma.trim()); }); });
+        if (document.getElementById('user-dash-analise')) document.getElementById('user-dash-analise').innerText = qtdEmAnalise;
+        if (document.getElementById('user-dash-aprovados')) document.getElementById('user-dash-aprovados').innerText = qtdAprov;
+        if (document.getElementById('user-dash-recusados')) document.getElementById('user-dash-recusados').innerText = qtdRecusados;
+        popularFiltroSelect('filtro-user-destino', fDestino); popularFiltroSelect('filtro-user-status', fStatus); popularFiltroSelect('filtro-user-turmas', fTurmas);
+      }
+
+      function filtrarAcompanhamento() {
+        const busca = document.getElementById('filtro-user-busca').value.toLowerCase(); const dataF = document.getElementById('filtro-user-data').value; const destinoF = document.getElementById('filtro-user-destino').value; const statusF = document.getElementById('filtro-user-status').value; const turmasF = document.getElementById('filtro-user-turmas').value;
+        let dataBuscaBr = dataF ? dataF.split('-').reverse().join('/') : '';
+        let base = window.simulandoEscola ? window.pedidosDaEscolaSimulada : window.todosPedidos;
+        window.pedidosFiltrados = base.filter(p => { let stringBusca = `${p.evento} ${p.destino} ${p.turmas} ${p.data} ${p.status}`.toLowerCase(); if (busca && !stringBusca.includes(busca)) return false; if (dataBuscaBr && p.data !== dataBuscaBr) return false; if (destinoF && p.evento !== destinoF) return false; if (statusF && p.status !== statusF) return false; if (turmasF && !p.turmas.includes(turmasF)) return false; return true; });
+        window.paginaAtual = 1; renderizarVisaoEscola();
+      }
+
+      function renderizarVisaoEscola() {
+        const containerCards = document.getElementById('meus-cards'); const tbodyLista = document.getElementById('tabela-escola-body'); const divPaginacao = document.getElementById('controles-paginacao');
+        if (!containerCards || !tbodyLista) return; containerCards.innerHTML = ''; tbodyLista.innerHTML = '';
+        try {
+          window.pedidosFiltrados.sort((a, b) => { if (a.unidade < b.unidade) return -1; if (a.unidade > b.unidade) return 1; let dA = a.data.split('/').reverse().join('-'); let dB = b.data.split('/').reverse().join('-'); if (dA < dB) return -1; if (dA > dB) return 1; if (a.evento < b.evento) return -1; if (a.evento > b.evento) return 1; if (a.status < b.status) return -1; if (a.status > b.status) return 1; return 0; });
+          let itensExibidos = window.pedidosFiltrados;
+          if (!window.escolaModoLista) { const totalPaginas = Math.ceil(window.pedidosFiltrados.length / ITENS_POR_PAGINA); if (window.paginaAtual < 1) window.paginaAtual = 1; if (window.paginaAtual > totalPaginas) window.paginaAtual = totalPaginas; const inicio = (window.paginaAtual-1) * ITENS_POR_PAGINA; const fim = inicio + ITENS_POR_PAGINA; itensExibidos = window.pedidosFiltrados.slice(inicio, fim); if (window.pedidosFiltrados.length > ITENS_POR_PAGINA) { divPaginacao.style.display = 'flex'; document.getElementById('info-pagina').innerText = `Página ${window.paginaAtual} de ${totalPaginas}`; document.getElementById('btn-prev').disabled = (window.paginaAtual===1); document.getElementById('btn-next').disabled = (window.paginaAtual===totalPaginas); } else { divPaginacao.style.display = 'none'; } } else { divPaginacao.style.display = 'none'; }
+          if (itensExibidos.length === 0) { containerCards.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--texto-muted); font-weight:800;">Nenhum pedido encontrado.</p>'; tbodyLista.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum pedido encontrado.</td></tr>'; return; }
+          itensExibidos.forEach(p => {
+            let sTxt = String(p.status||'').toLowerCase(); let corStatus = 'var(--vermelho)'; let jaCancelado = sTxt.includes('cancel')||sTxt.includes('recus')||sTxt.includes('reprov'); let podeEditar = !jaCancelado && !sTxt.includes('aprov') && !sTxt.includes('rota') && !sTxt.includes('concl');
+            let botoesAcao = '';
+            if (podeEditar) botoesAcao = `<button class="btn-editar" onclick="event.stopPropagation(); abrirEdicaoPedido('${p.idLinhas}')">Editar</button><button class="btn-danger" onclick="event.stopPropagation(); abrirModalCancelamento('${p.idLinhas}')">Cancelar</button>`;
+            else if (!jaCancelado) botoesAcao = `<button class="btn-danger" onclick="event.stopPropagation(); abrirModalCancelamento('${p.idLinhas}')">Pedir Cancelamento</button>`;
+            else botoesAcao = `<small style="color:var(--texto-muted); font-weight:700;">Encerrado</small>`;
+            if (sTxt.includes('análise')||sTxt.includes('analise')||sTxt.includes('novo')) corStatus = 'var(--primary)'; else if (sTxt.includes('concl')||sTxt.includes('aprov')||sTxt.includes('rota')) corStatus = 'var(--verde)';
+            containerCards.innerHTML += `<div class="card" style="border-top-color:${corStatus}; cursor:pointer;" onclick="abrirDetalhesCard('${p.idLinhas}')"><h3 style="margin:0 0 8px 0; color:${corStatus}; font-size:.9rem;">${p.evento}</h3><p style="margin:3px 0; font-size:.78rem;"><strong>Unidade:</strong> ${p.unidade}</p><p style="margin:3px 0; font-size:.78rem;"><strong>Data:</strong> ${p.data} (${p.periodo})</p><p style="margin:3px 0; font-size:.78rem;"><strong>Turmas:</strong> ${p.turmas} (${p.qtdAlunos} passageiros)</p><p style="margin:3px 0; font-size:.78rem;"><strong>Destino:</strong> ${p.destino}</p><span style="display:inline-block; padding:4px 11px; margin:10px 0; border-radius:999px; font-size:.67rem; font-weight:900; background:var(--azul-claro); color:${corStatus};">${p.status}</span><div style="border-top:1px solid var(--borda); padding-top:10px; display:flex; gap:8px; flex-wrap:wrap;">${botoesAcao}</div></div>`;
+            tbodyLista.innerHTML += `<tr><td>${p.data}<br><small style="color:var(--texto-muted);">${p.periodo}</small></td><td style="font-weight:800;">${p.unidade}</td><td>${p.evento}</td><td>${p.qtdAlunos}</td><td><span style="background:${corStatus}; color:#fff; padding:3px 8px; border-radius:999px; font-size:.65rem; font-weight:900;">${p.status}</span></td><td style="white-space:nowrap;">${botoesAcao}</td></tr>`;
+          });
+        } catch (e) { containerCards.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:var(--laranja);">Erro: ${e.message}</p>`; }
+      }
+
+      function mudarPagina(direcao) { window.paginaAtual += direcao; renderizarVisaoEscola(); }
+
+      function abrirDetalhesCard(idLinhasStr) {
+        let p = window.todosPedidos.find(x => String(x.idLinhas) === String(idLinhasStr)); if (!p) return;
+        document.getElementById('det-und').innerText = p.unidade; document.getElementById('det-evento').innerText = p.evento + (p.detalhe ? ' — ' + p.detalhe : ''); document.getElementById('det-rota').innerText = p.origem + ' ➔ ' + p.destino; document.getElementById('det-data').innerText = p.data + ' | ' + p.periodo + ' (Saída: ' + p.idaPartida + ')'; document.getElementById('det-resp').innerText = p.responsavel; document.getElementById('det-tel').innerText = p.telefone; document.getElementById('det-criado-por').innerText = p.criadoPor || 'Sistema';
+        let dataSolFormatada = p.dataSolicitacao || '-';
+        if (dataSolFormatada !== '-' && !isNaN(Date.parse(dataSolFormatada))) { const dataObj = new Date(dataSolFormatada); dataSolFormatada = dataObj.toLocaleString('pt-BR', {weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}); }
+        document.getElementById('det-data-sol').innerText = dataSolFormatada;
+        let placaFinal = p.placa || 'Aguardando Despacho'; let motoristaFinal = 'Aguardando Escala da Empresa';
+        if (p.placa && p.placa.includes('(Mot:')) { let partes = p.placa.split(' | '); let frotaStr = []; let motStr = []; partes.forEach(parte => { let pedacos = parte.split('(Mot:'); if (pedacos.length === 2) { frotaStr.push(pedacos[0].trim()); motStr.push(pedacos[1].replace(')','').trim()); } }); placaFinal = frotaStr.join(' e '); motoristaFinal = motStr.join(' e '); }
+        document.getElementById('det-placa').innerText = placaFinal; document.getElementById('det-motorista').innerText = motoristaFinal;
+        let stCor = 'var(--vermelho)'; let sTxt = String(p.status).toLowerCase(); if (sTxt.includes('análise')||sTxt.includes('novo')) stCor = 'var(--primary)'; else if (sTxt.includes('concl')||sTxt.includes('aprov')||sTxt.includes('rota')) stCor = 'var(--verde)';
+        document.getElementById('det-status').innerText = p.status; document.getElementById('det-status').style.backgroundColor = stCor; document.getElementById('det-status').style.color = 'white';
+        document.getElementById('det-historico-box').innerText = p.historico || 'Nenhum histórico registrado.';
+        abrirModal('modal-detalhes-card');
+      }
+
+      function abrirModalCancelamento(idLinhasStr) { document.getElementById('cancel-id-linhas').value = idLinhasStr; document.getElementById('cancel-justificativa').value = ''; abrirModal('modal-cancelamento'); }
+
+      function confirmarCancelamento() {
+        let idLinhasStr = document.getElementById('cancel-id-linhas').value; let justificativa = document.getElementById('cancel-justificativa').value;
+        if (!justificativa) { mostrarToast("Preencha o motivo do cancelamento.", "warning"); return; }
+        let arr = idLinhasStr.split(',');
+        if (window.MODO_SIMULACAO) { window.todosPedidos.forEach(p => { if (arr.includes(String(p.idLinha))) p.status = 'Cancelado (Simulação)'; }); if (window.simulandoEscola) { let esc = document.getElementById('form-unidade').value; window.pedidosDaEscolaSimulada = window.todosPedidos.filter(p => p.unidade === esc); } atualizarKPIsEFiltrosUser(window.simulandoEscola ? window.pedidosDaEscolaSimulada : window.todosPedidos); filtrarAcompanhamento(); fecharModal('modal-cancelamento'); mostrarToast('💻 SIMULAÇÃO: Cancelamento testado.', 'warning'); return; }
+        let btn = document.querySelector('#modal-cancelamento .btn-danger'); btn.innerText = "Cancelando..."; btn.disabled = true;
+        google.script.run.withSuccessHandler(r => { fecharModal('modal-cancelamento'); btn.innerText = "Confirmar Cancelamento"; btn.disabled = false; if (r.sucesso) { carregarCards(); mostrarToast('Pedido Cancelado.', 'success'); } }).cancelarPedidoEscola(arr, justificativa);
+      }
+
+      function abrirEdicaoPedido(idLinhasStr) {
+        let p = window.todosPedidos.find(x => String(x.idLinhas) === String(idLinhasStr)); if (!p) return;
+        window.pedidoAtualEdicaoOriginal = p;
+        document.getElementById('formPedido').reset(); 
+        document.getElementById('form-edicao-linhas').value = JSON.stringify(p.idLinhas); 
+        document.getElementById('form-unidade').value = p.unidade;
+        document.getElementById('form-origem').value = p.origem; 
+        document.getElementById('form-destino').value = p.destino;
+        
+        // CORREÇÃO: Chamar mudouUnidade() para carregar turmas da escola selecionada
+        // Isso garante que as turmas corretas apareçam quando abrir o formulário
+        mudouUnidade();
+        
+        let evBusca = p.evento.startsWith('Outros:') ? 'Outros' : p.evento; 
+        document.getElementById('form-evento').value = evBusca;
+        if (p.data) { let d = p.data.split('/'); document.getElementById('form-data').value = `${d[2]}-${d[1]}-${d[0]}`; }
+        document.getElementById('form-periodo').value = p.periodo; 
+        document.getElementById('form-ida').value = p.idaPartida; 
+        if (document.getElementById('form-volta')) document.getElementById('form-volta').value = p.voltaPartida || '';
+        document.getElementById('form-resp').value = p.responsavel; 
+        document.getElementById('form-tel').value = p.telefone; 
+        document.getElementById('form-qtd').value = p.qtdAlunos; 
+        document.getElementById('form-obs').value = p.observacoes;
+        if (p.tituloOutros) document.getElementById('form-titulo-outros').value = p.tituloOutros;
+        
+        if (p.acessibilidade === 'SIM') { 
+          document.getElementById('form-acess').checked = true; 
+          document.getElementById('form-qtd-adaptado').value = p.qtdAdaptado; 
+        } else { 
+          document.getElementById('form-acess').checked = false; 
+          document.getElementById('form-qtd-adaptado').value = ''; 
+        }
+        toggleQtdAdaptado();
+        
+        let turmasAtuais = p.turmas.split(', '); 
+        document.querySelectorAll('input[name="turma-selecao"]').forEach(chk => { if (turmasAtuais.includes(chk.value)) chk.checked = true; });
+        // Revalidar as turmas selecionadas
+        validarMistura();
+        
+        abrirModal('modal-formulario'); 
+        mostrarToast('Modo de Edição Ativado.', 'warning');
+      }
+
+      function enviarPedido(e) {
+        e.preventDefault(); const btn = document.getElementById('btn-salvar'); btn.disabled = true; btn.innerText = 'Enviando...';
+        let detalheFinal = document.getElementById('form-detalhe').value; if (document.getElementById('form-evento').value.toLowerCase().includes('cauim')) detalheFinal = document.getElementById('form-filme-select').value;
+        const turmasJson = JSON.parse(document.getElementById('form-turmas').value); let idLinhasAntigas = document.getElementById('form-edicao-linhas').value;
+        const dados = { unidade: document.getElementById('form-unidade').value, evento: document.getElementById('form-evento').value, origem: document.getElementById('form-origem').value, destino: document.getElementById('form-destino').value, data: document.getElementById('form-data').value, periodo: document.getElementById('form-periodo').value, idaPartida: document.getElementById('form-ida').value, idaChegada: '', voltaPartida: (document.getElementById('form-volta') ? document.getElementById('form-volta').value : ''), voltaChegada: '', responsavel: document.getElementById('form-resp').value, telefone: document.getElementById('form-tel').value, turma: 'Múltiplas (Veja Coluna X)', turmasDetalhadas: turmasJson, qtdAlunosTotal: document.getElementById('form-qtd').value, tituloOutros: document.getElementById('form-titulo-outros') ? document.getElementById('form-titulo-outros').value : '', detalhe: detalheFinal, observacoes: document.getElementById('form-obs').value, acessibilidade: document.getElementById('form-acess').checked, qtdAdaptado: document.getElementById('form-qtd-adaptado') ? document.getElementById('form-qtd-adaptado').value : 0 };
+        if (idLinhasAntigas && window.pedidoAtualEdicaoOriginal) { dados.idLinhasAntigas = JSON.parse(idLinhasAntigas); dados.historicoAntigo = window.pedidoAtualEdicaoOriginal.historico||''; dados.criadoPorAntigo = window.pedidoAtualEdicaoOriginal.criadoPor||''; dados.dataSolAntiga = window.pedidoAtualEdicaoOriginal.dataSolicitacao||''; }
+        if (!window.isAdmin && !dados.idLinhasAntigas) { let onibusDisp = getOnibusDisponiveisNoPeriodo(dados.data, dados.periodo); if (onibusDisp <= 0) { let dataFormatada = dados.data.split('-').reverse().join('/'); mostrarToast(`BLOQUEADO: Sem frota para a ${dados.periodo.toLowerCase()} em ${dataFormatada}.`, 'error'); btn.disabled = false; btn.innerText = 'Enviar Solicitação'; return; } }
+        if (window.MODO_SIMULACAO) { let idUnico = 'SIM_' + Date.now(); let reqTurmas = dados.turmasDetalhadas.map(t => t.nome).join(', '); let evF = dados.evento === 'Outros' && dados.tituloOutros ? `Outros: ${dados.tituloOutros}` : dados.evento; if (dados.idLinhasAntigas) { window.todosPedidos = window.todosPedidos.filter(x => JSON.stringify(x.idLinhas) !== JSON.stringify(dados.idLinhasAntigas)); } window.todosPedidos.unshift({idLinha: idUnico, idLinhas: [idUnico], unidade: dados.unidade, turmas: reqTurmas, qtdAlunos: dados.qtdAlunosTotal, data: dados.data.split('-').reverse().join('/'), periodo: dados.periodo, origem: dados.origem, destino: dados.destino, idaPartida: dados.idaPartida, evento: evF, observacoes: dados.observacoes, detalhe: dados.detalhe, responsavel: dados.responsavel, telefone: dados.telefone, acessibilidade: dados.acessibilidade ? 'SIM' : 'NÃO', qtdAdaptado: dados.qtdAdaptado, status: 'Em Análise', historico: 'Editado em simulação', criadoPor: 'Usuário', dataSolicitacao: 'Hoje'}); if (window.simulandoEscola) { window.pedidosDaEscolaSimulada = window.todosPedidos.filter(p => p.unidade.toLowerCase() === dados.unidade.toLowerCase()); } mostrarToast('💻 SIMULAÇÃO: Pedido salvo temporariamente.', 'warning'); document.getElementById('formPedido').reset(); document.getElementById('form-edicao-linhas').value = ''; fecharModal('modal-formulario'); atualizarKPIsEFiltrosUser(window.simulandoEscola ? window.pedidosDaEscolaSimulada : window.todosPedidos); filtrarAcompanhamento(); if (window.isAdmin) renderizarTabelaAdmin(); btn.disabled = false; btn.innerText = 'Enviar Solicitação'; toggleQtdAdaptado(); window.pedidoAtualEdicaoOriginal = null; return; }
+        if (dados.idLinhasAntigas) { google.script.run.withSuccessHandler((r) => { if (r.sucesso) { mostrarToast('Pedido atualizado!', 'success'); document.getElementById('formPedido').reset(); document.getElementById('form-edicao-linhas').value = ''; toggleQtdAdaptado(); window.pedidoAtualEdicaoOriginal = null; fecharModal('modal-formulario'); carregarCards(); } else { mostrarToast('Erro: ' + r.erro, 'error'); } btn.disabled = false; btn.innerText = 'Enviar Solicitação'; }).editarPedidoCompleto(dados); }
+        else { google.script.run.withSuccessHandler((r) => { if (r.sucesso) { mostrarToast('Enviado com sucesso!', 'success'); document.getElementById('formPedido').reset(); document.getElementById('form-edicao-linhas').value = ''; toggleQtdAdaptado(); window.pedidoAtualEdicaoOriginal = null; fecharModal('modal-formulario'); carregarCards(); } else { mostrarToast('Erro: ' + r.erro, 'error'); } btn.disabled = false; btn.innerText = 'Enviar Solicitação'; }).salvarNovoPedido(dados); }
+      }
+
+      // ============================================
+      // MÍDIA / CMS COM QUILL
+      // ============================================
+      function adicionarCampoLinkMidia(nome='', url='') { const container = document.getElementById('container-links-midia'); const div = document.createElement('div'); div.className = 'row-link-midia'; div.style.cssText = 'display:flex; gap:6px; align-items:center;'; div.innerHTML = `<input type="text" class="input-nome-midia" placeholder="Nome (Ex: Edital)" value="${nome}" style="flex:1;"><input type="url" class="input-url-midia" placeholder="Link (URL)" value="${url}" style="flex:2;"><button type="button" class="btn-danger" style="margin:0; padding:7px 11px; font-weight:900; flex-shrink:0;" onclick="this.parentElement.remove()">✕</button>`; container.appendChild(div); }
+      function carregarMidias() { document.getElementById('tabela-midia-body').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--texto-muted); font-weight:800;">Carregando Mídias...</td></tr>'; google.script.run.withSuccessHandler(r => { if (r.erro) { document.getElementById('tabela-midia-body').innerHTML = `<tr><td colspan="5" style="color:var(--vermelho); text-align:center">${r.erro}</td></tr>`; return; } window.midiaEventosData = r.dados; window.midiaEventos = {}; r.dados.forEach(m => { window.midiaEventos[m.evento] = {img:m.img,txt:m.txt,link:m.link}; }); renderizarMidiasAdmin(); }).getMidiasAdmin(); }
+      function renderizarMidiasAdmin() { const tbody = document.getElementById('tabela-midia-body'); tbody.innerHTML = ''; if (!window.midiaEventosData || window.midiaEventosData.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--texto-muted); font-weight:800;">Nenhuma mídia cadastrada.</td></tr>`; return; } window.midiaEventosData.forEach(m => { let limitTxt = m.txt.replace(/<[^>]*>?/gm,''); limitTxt = limitTxt.length > 50 ? limitTxt.substring(0,50) + "..." : limitTxt; let temAnexo = 'Não'; if (m.link) { try { let arr = JSON.parse(m.link); if (Array.isArray(arr) && arr.length > 0) temAnexo = `${arr.length} arquivo(s)`; else if (m.link.length > 5) temAnexo = 'Sim'; } catch(e) { temAnexo = 'Sim'; } } tbody.innerHTML += `<tr><td style="font-weight:800">${m.evento}</td><td>${m.img ? 'Sim' : 'Não'}</td><td>${limitTxt}</td><td>${temAnexo}</td><td style="white-space:nowrap"><button class="btn-editar" onclick="abrirModalMidia('${m.idLinha}')">Editar</button><button class="btn-danger" onclick="excluirMidia('${m.idLinha}')">Excluir</button></td></tr>`; }); }
+      function abrirModalMidia(idLinha=null) { document.getElementById('formMidia').reset(); document.getElementById('admin-midia-linha').value = ''; const selEvt = document.getElementById('m-evento'); selEvt.innerHTML = '<option value="">Selecione o Evento...</option>'; window.listaEventosDrop.forEach(ev => selEvt.innerHTML += `<option value="${ev}">${ev}</option>`); const containerLinks = document.getElementById('container-links-midia'); containerLinks.innerHTML = ''; if (idLinha) { const m = window.midiaEventosData.find(x => String(x.idLinha) === String(idLinha)); if (m) { document.getElementById('admin-midia-linha').value = m.idLinha; document.getElementById('m-evento').value = m.evento; document.getElementById('m-img').value = m.img; if (window.quillEditor) window.quillEditor.root.innerHTML = m.txt; if (m.link) { try { let arr = JSON.parse(m.link); if (Array.isArray(arr)) { arr.forEach(lk => adicionarCampoLinkMidia(lk.nome, lk.url)); } else { adicionarCampoLinkMidia('Anexo', m.link); } } catch(e) { adicionarCampoLinkMidia('Anexo', m.link); } } } } else { if (window.quillEditor) window.quillEditor.root.innerHTML = ''; } if (containerLinks.children.length === 0) adicionarCampoLinkMidia(); abrirModal('modal-midia-evento'); }
+      function salvarMidia(e) { e.preventDefault(); const btn = document.getElementById('btn-salvar-midia'); btn.disabled = true; btn.innerText = 'Salvando...'; let linksArr = []; document.querySelectorAll('.row-link-midia').forEach(row => { let nome = row.querySelector('.input-nome-midia').value.trim(); let url = row.querySelector('.input-url-midia').value.trim(); if (url) linksArr.push({nome:nome||'Anexo',url:url}); }); let linkFinal = linksArr.length > 0 ? JSON.stringify(linksArr) : ''; let textoFormatado = window.quillEditor ? window.quillEditor.root.innerHTML : ''; let urlImg = document.getElementById('m-img').value.trim(); if (urlImg.includes('drive.google.com')) { urlImg = urlImg.replace(/.*\/d\/([^\/]+).*/, 'https://drive.google.com/thumbnail?id=$1&sz=w1000'); } const d = {idLinha:document.getElementById('admin-midia-linha').value, evento:document.getElementById('m-evento').value, img:urlImg, txt:textoFormatado, link:linkFinal}; if (window.MODO_SIMULACAO) { if (!d.idLinha) { d.idLinha = 'SIM_' + Date.now(); window.midiaEventosData.unshift(d); } else { let idx = window.midiaEventosData.findIndex(x => String(x.idLinha) === String(d.idLinha)); if (idx!==-1) window.midiaEventosData[idx] = d; } window.midiaEventos[d.evento.trim()] = {img:d.img,txt:d.txt,link:linkFinal}; fecharModal('modal-midia-evento'); renderizarMidiasAdmin(); mostrarToast('💻 SIMULAÇÃO: Mídia salva.', 'warning'); btn.disabled = false; btn.innerText = 'Salvar Layout'; return; } google.script.run.withSuccessHandler(r => { if (r.sucesso) { fecharModal('modal-midia-evento'); carregarMidias(); mostrarToast('Layout salvo!', 'success'); } else mostrarToast('Erro: ' + r.erro, 'error'); btn.disabled = false; btn.innerText = 'Salvar Layout'; }).salvarMidiaAdmin(d); }
+      function excluirMidia(idLinha) { if (!confirm("Remover o layout deste evento?")) return; if (window.MODO_SIMULACAO) { window.midiaEventosData = window.midiaEventosData.filter(x => String(x.idLinha) !== String(idLinha)); renderizarMidiasAdmin(); mostrarToast('💻 SIMULAÇÃO: Excluído.', 'warning'); return; } google.script.run.withSuccessHandler(r => { if (r.sucesso) { carregarMidias(); mostrarToast('Excluído!', 'success'); } else mostrarToast("Erro: " + r.erro, 'error'); }).excluirMidiaAdmin(idLinha); }
+
+      // ============================================
+      // AVALIAÇÃO E ADMINISTRAÇÃO
+      // ============================================
+      function renderizarTabelaAdmin() {
+        try {
+          const tbody = document.getElementById('tabela-admin-body'); if (!tbody) return;
+          let qtdEmAnalise = 0, qtdAprov = 0, qtdRecusados = 0; let fPeriodo = new Set(); let fUnidades = new Set(); let fEventos = new Set(); let fStatus = new Set(); let linhasHtml = '';
+          window.todosPedidos.forEach(p => {
+            let sTxt = String(p.status||'').toLowerCase(); let bgCor = 'var(--texto-muted)';
+            if (sTxt.includes('análise')||sTxt.includes('analise')||sTxt.includes('novo')) { qtdEmAnalise++; bgCor = 'var(--primary)'; } else if (sTxt.includes('aprov')||sTxt.includes('conclu')||sTxt.includes('rota')) { qtdAprov++; bgCor = 'var(--verde)'; } else if (sTxt.includes('recus')||sTxt.includes('reprov')||sTxt.includes('cancel')) { qtdRecusados++; bgCor = 'var(--vermelho)'; }
+            fPeriodo.add(p.periodo); fUnidades.add(p.unidade); fEventos.add(p.evento); fStatus.add(p.status);
+            let stringBusca = `${String(p.unidade).toLowerCase()} ${String(p.evento).toLowerCase()} ${String(p.status).toLowerCase()} ${String(p.data).toLowerCase()}`;
+            linhasHtml += `<tr class="linha-admin" data-data="${p.data}" data-per="${p.periodo}" data-und="${p.unidade}" data-evt="${p.evento}" data-sts="${p.status}" data-busca="${stringBusca}"><td>${p.data}<br><small style="color:var(--texto-muted);">${p.periodo}</small></td><td style="font-weight:800;">${p.unidade}</td><td>${p.evento}</td><td>${p.qtdAlunos}</td><td><span style="background:${bgCor}; color:#fff; padding:3px 9px; border-radius:999px; font-size:.65rem; font-weight:900;">${p.status}</span></td><td style="white-space:nowrap;"><button class="btn-editar" onclick="abrirEdicaoPedido('${p.idLinhas}')">Editar</button><button class="btn-avaliar" onclick="abrirModalAvaliacao('${p.idLinha}')">Avaliar</button></td></tr>`;
+          });
+          tbody.innerHTML = linhasHtml;
+          document.getElementById('dash-analise').innerText = qtdEmAnalise; document.getElementById('dash-aprovados').innerText = qtdAprov; document.getElementById('dash-recusados').innerText = qtdRecusados;
+          popularFiltroSelect('filtro-periodo', fPeriodo); popularFiltroSelect('filtro-unidade', fUnidades); popularFiltroSelect('filtro-evento', fEventos); popularFiltroSelect('filtro-status', fStatus); filtrarTabelaAdmin();
+        } catch (e) { console.error("Erro renderizarTabelaAdmin: ", e); }
+      }
+
+      function filtrarTabelaAdmin() {
+        try {
+          const tBusca = document.getElementById('filtro-admin').value.toLowerCase(); const fData = document.getElementById('filtro-data').value; const fPer = document.getElementById('filtro-periodo').value; const fUnd = document.getElementById('filtro-unidade').value; const fEvt = document.getElementById('filtro-evento').value; const fSts = document.getElementById('filtro-status').value;
+          let fDataBr = fData ? fData.split('-').reverse().join('/') : '';
+          document.querySelectorAll('.linha-admin').forEach(linha => { let mostrar = true; if (tBusca && !linha.getAttribute('data-busca').includes(tBusca)) mostrar = false; if (fDataBr && linha.getAttribute('data-data') !== fDataBr) mostrar = false; if (fPer && linha.getAttribute('data-per') !== fPer) mostrar = false; if (fUnd && linha.getAttribute('data-und') !== fUnd) mostrar = false; if (fEvt && linha.getAttribute('data-evt') !== fEvt) mostrar = false; if (fSts && linha.getAttribute('data-sts') !== fSts) mostrar = false; linha.style.display = mostrar ? '' : 'none'; });
+        } catch (e) { console.error("Erro filtrarTabelaAdmin:", e); }
+      }
+
+      function abrirModalAvaliacao(idLinha) {
+        const pedido = window.todosPedidos.find(p => String(p.idLinha) === String(idLinha)); if (!pedido) return;
+        document.getElementById('grupo-justificativa').style.display = 'none';
+        document.getElementById('admin-id-linhas').value = JSON.stringify(pedido.idLinhas); document.getElementById('view-und').innerText = pedido.unidade; document.getElementById('view-evento').innerText = pedido.evento + (pedido.detalhe ? ` — ${pedido.detalhe}` : ''); document.getElementById('view-rota').innerText = `${pedido.origem} ➔ ${pedido.destino}`; document.getElementById('view-data').innerText = `${pedido.data} | ${pedido.periodo} | Saída: ${pedido.idaPartida}`; document.getElementById('view-resp').innerText = `${pedido.responsavel} | Tel: ${pedido.telefone}`; document.getElementById('view-turmas').innerText = `${pedido.turmas} (${pedido.qtdAlunos} passageiros)`; document.getElementById('view-acess').innerText = pedido.acessibilidade === 'SIM' ? `🚨 SIM (${pedido.qtdAdaptado} passageiros)` : 'Não'; document.getElementById('view-obs').innerText = pedido.observacoes || 'Nenhuma';
+        document.getElementById('admin-justificativa').value = ''; document.getElementById('admin-placa').value = '';
+        const qtdAlunos = parseInt(pedido.qtdAlunos) || 0; const qtdOnibus = Math.ceil(qtdAlunos / 43);
+        document.getElementById('texto-necessidade-onibus').innerText = `Necessário: ${qtdOnibus} ônibus para esta viagem.`;
+        abrirModal('modal-admin');
+      }
+
+      function enviarAvaliacaoAdmin(statusDesejado) {
+        const btnAprovar = document.getElementById('btn-aprovar-admin'); const btnRecusar = document.getElementById('btn-recusar-admin'); const campoJustificativa = document.getElementById('admin-justificativa'); const grupoJustificativa = document.getElementById('grupo-justificativa'); const justificativa = campoJustificativa.value.trim(); const idLinhas = JSON.parse(document.getElementById('admin-id-linhas').value);
+        if (statusDesejado === 'Recusado') { if (grupoJustificativa.style.display === 'none') { grupoJustificativa.style.display = 'block'; campoJustificativa.focus(); mostrarToast('Por favor, informe o motivo da recusa.', 'warning'); return; } if (justificativa === '') { mostrarToast('O motivo da recusa é obrigatório.', 'error'); campoJustificativa.focus(); return; } }
+        btnAprovar.disabled = true; btnRecusar.disabled = true; btnAprovar.innerText = 'Processando...'; btnRecusar.innerText = 'Confirmando...';
+        const payload = {idLinhas: idLinhas, status: statusDesejado, placa: '', justificativa: justificativa};
+        google.script.run.withSuccessHandler((r) => { if (r.sucesso) { fecharModal('modal-admin'); carregarCards(); mostrarToast(`Pedido ${statusDesejado}!`, 'success'); } else { mostrarToast('Erro: ' + r.erro, 'error'); } btnAprovar.disabled = false; btnRecusar.disabled = false; btnAprovar.innerText = '✅ Aprovar Pedido'; btnRecusar.innerText = '❌ Recusar Pedido'; }).atualizarStatusPedido(payload);
+      }
+
+      // ============================================
+      // VEÍCULOS E MOTORISTAS
+      // ============================================
+      function carregarMotoristas() {
+        const containerEmp = document.getElementById('lista-motoristas-empresa'); const containerAdm = document.getElementById('lista-motoristas-admin');
+        if (containerEmp) containerEmp.innerHTML = '<p class="loader" style="grid-column:1/-1;">Lendo motoristas...</p>'; if (containerAdm) containerAdm.innerHTML = '<p class="loader" style="grid-column:1/-1;">Lendo motoristas...</p>';
+        google.script.run.withFailureHandler(err => { const msg = `<p style="color:var(--vermelho); grid-column:1/-1; text-align:center;">Falha: ${err.message}</p>`; if (containerEmp) containerEmp.innerHTML = msg; if (containerAdm) containerAdm.innerHTML = msg; }).withSuccessHandler(res => { if (res.erro) { const msg = `<p style="color:var(--vermelho); grid-column:1/-1; text-align:center;">${res.erro}</p>`; if (containerEmp) containerEmp.innerHTML = msg; if (containerAdm) containerAdm.innerHTML = msg; } else { window.listaMotoristas = res.dados || []; renderizarMotoristas(); } }).getMotoristas();
+      }
+      function renderizarMotoristas() {
+        const containerEmp = document.getElementById('lista-motoristas-empresa'); const containerAdm = document.getElementById('lista-motoristas-admin'); const loadingAdm = document.getElementById('loading-motoristas'); if (loadingAdm) loadingAdm.style.display = 'none';
+        let html = '';
+        if (!window.listaMotoristas || window.listaMotoristas.length === 0) { html = '<p style="color:var(--texto-muted); grid-column:1/-1; text-align:center; font-weight:800; padding:20px;">Nenhum motorista cadastrado.</p>'; }
+        else { window.listaMotoristas.forEach(m => { let corStatus = m.status === 'Ativo' ? 'var(--verde)' : 'var(--vermelho)'; let botoes = `<div style="margin-top:10px; border-top:1px solid var(--borda); padding-top:10px; display:flex; gap:8px;"><button class="btn-editar" onclick="abrirModalMotorista('${m.idLinha}')">Editar</button><button class="btn-danger" onclick="excluirMotorista('${m.idLinha}')">Excluir</button></div>`; html += `<div class="card"><h4 style="margin:0 0 6px 0; font-size:.9rem;">${m.nome}</h4><p style="margin:4px 0; font-size:.76rem;">📞 ${m.contato}</p><p style="margin:4px 0; font-size:.76rem;">🏢 ${m.empresa}</p><span class="badge-status" style="color:${corStatus};">${m.status}</span>${botoes}</div>`; }); }
+        if (containerEmp) containerEmp.innerHTML = html; if (containerAdm) containerAdm.innerHTML = html;
+      }
+      function abrirModalMotorista(idLinha=null) { document.getElementById('formMotorista').reset(); document.getElementById('mot-id-linha').value = ''; if (idLinha) { let m = window.listaMotoristas.find(x => String(x.idLinha) === String(idLinha)); if (m) { document.getElementById('mot-id-linha').value = m.idLinha; document.getElementById('mot-empresa').value = m.empresa; document.getElementById('mot-nome').value = m.nome; document.getElementById('mot-contato').value = m.contato; document.getElementById('mot-status').value = m.status; } } abrirModal('modal-motorista'); }
+      function salvarMotorista(e) { e.preventDefault(); let btn = document.getElementById('btn-salvar-motorista'); btn.disabled = true; btn.innerText = 'Salvando...'; let dados = {idLinha: document.getElementById('mot-id-linha').value, empresa: document.getElementById('mot-empresa').value, nome: document.getElementById('mot-nome').value, contato: document.getElementById('mot-contato').value, status: document.getElementById('mot-status').value}; if (window.MODO_SIMULACAO) { if (dados.idLinha) { let idx = window.listaMotoristas.findIndex(x => String(x.idLinha) === String(dados.idLinha)); if (idx!==-1) window.listaMotoristas[idx] = dados; } else { dados.idLinha = 'SIM_' + Date.now(); window.listaMotoristas.unshift(dados); } fecharModal('modal-motorista'); renderizarMotoristas(); mostrarToast('💻 SIMULAÇÃO: Salvo.', 'warning'); btn.disabled = false; btn.innerText = 'Salvar Motorista'; return; } google.script.run.withSuccessHandler(r => { if (r.sucesso) { mostrarToast('Motorista Salvo', 'success'); fecharModal('modal-motorista'); carregarMotoristas(); } btn.disabled = false; btn.innerText = 'Salvar Motorista'; }).salvarMotorista(dados); }
+      function excluirMotorista(idLinha) { if (!confirm("Excluir este motorista?")) return; if (window.MODO_SIMULACAO) { window.listaMotoristas = window.listaMotoristas.filter(x => String(x.idLinha) !== String(idLinha)); renderizarMotoristas(); return; } google.script.run.withSuccessHandler(r => { if (r.sucesso) { carregarMotoristas(); mostrarToast('Excluído!', 'success'); } }).excluirMotoristaAdmin(idLinha); }
+      function abrirModalVeiculo(idLinha=null) { document.getElementById('formVeiculo').reset(); document.getElementById('v-id-linha').value = ''; let selMot = document.getElementById('v-motorista'); selMot.innerHTML = '<option value="">Nenhum / Não Cadastrado</option>'; window.listaMotoristas.forEach(m => { if (m.status === 'Ativo') selMot.innerHTML += `<option value="${m.nome} | ${m.contato}">${m.nome} (${m.empresa})</option>`; }); if (idLinha) { let v = window.listaVeiculos.find(x => String(x.idLinha) === String(idLinha)); if (v) { document.getElementById('v-id-linha').value = v.idLinha; document.getElementById('v-empresa').value = v.empresa; document.getElementById('v-veiculo').value = v.veiculo; document.getElementById('v-placa').value = v.placa; document.getElementById('v-lotacao').value = v.lotacao; document.getElementById('v-acessibilidade').value = v.acessibilidade; document.getElementById('v-disponibilidade').value = v.disponibilidade; let dataInput = v.dataCadastro; if (dataInput && dataInput.includes('/')) { let p = dataInput.split('/'); dataInput = `${p[2]}-${p[1]}-${p[0]}`; } document.getElementById('v-data').value = dataInput || ''; if (v.motorista && v.contato) selMot.value = `${v.motorista} | ${v.contato}`; } } abrirModal('modal-veiculo'); }
+      function enviarVeiculo(e) { e.preventDefault(); const btn = document.getElementById('btn-salvar-veiculo'); btn.disabled = true; btn.innerText = 'Salvando...'; let motInfo = document.getElementById('v-motorista').value; let nMot = '', cMot = ''; if (motInfo) { nMot = motInfo.split(' | ')[0]; cMot = motInfo.split(' | ')[1]; } const dados = {idLinha: document.getElementById('v-id-linha').value, empresa: document.getElementById('v-empresa').value, veiculo: document.getElementById('v-veiculo').value, placa: document.getElementById('v-placa').value, lotacao: document.getElementById('v-lotacao').value, acessibilidade: document.getElementById('v-acessibilidade').value, disponibilidade: document.getElementById('v-disponibilidade').value, motorista: nMot, contato: cMot, custo: '', dataCadastro: document.getElementById('v-data').value}; if (window.MODO_SIMULACAO) { if (dados.idLinha) { let idx = window.listaVeiculos.findIndex(x => String(x.idLinha) === String(dados.idLinha)); if (idx!==-1) window.listaVeiculos[idx] = dados; } else { dados.idLinha = 'SIM_' + Date.now(); if (dados.dataCadastro) { let p = dados.dataCadastro.split('-'); dados.dataCadastro = `${p[2]}/${p[1]}/${p[0]}`; } window.listaVeiculos.unshift(dados); } fecharModal('modal-veiculo'); renderizarVeiculos(); renderizarVeiculosEmpresa(); mostrarToast('💻 SIMULAÇÃO: Veículo salvo.', 'warning'); btn.disabled = false; btn.innerText = 'Salvar Veículo'; return; } google.script.run.withSuccessHandler((r) => { if (r.sucesso) { mostrarToast('Veículo salvo!', 'success'); document.getElementById('formVeiculo').reset(); fecharModal('modal-veiculo'); carregarVeiculos(); } else { mostrarToast('Erro: ' + r.erro, 'error'); } btn.disabled = false; btn.innerText = 'Salvar Veículo'; }).salvarNovoVeiculo(dados); }
+      function excluirVeiculo(idLinha) { if (!confirm("Excluir este veículo?")) return; if (window.MODO_SIMULACAO) { window.listaVeiculos = window.listaVeiculos.filter(x => String(x.idLinha) !== String(idLinha)); renderizarVeiculos(); renderizarVeiculosEmpresa(); return; } google.script.run.withSuccessHandler(r => { if (r.sucesso) { carregarVeiculos(); mostrarToast('Excluído!', 'success'); } }).excluirVeiculoAdmin(idLinha); }
+      function carregarVeiculos() { if (!window.isAdmin) return; const loading = document.getElementById('loading-veiculos'); const container = document.getElementById('lista-veiculos'); if (loading) loading.style.display = 'block'; if (container) container.innerHTML = ''; google.script.run.withFailureHandler(erro => { if (loading) loading.innerHTML = `<p style="color:var(--laranja)">Erro: ${erro.message}</p>`; }).withSuccessHandler(res => { if (loading) loading.style.display = 'none'; if (res.erro) { if (container) container.innerHTML = `<p style="color:var(--laranja)">${res.erro}</p>`; return; } window.listaVeiculos = res.dados || []; renderizarVeiculos(); renderizarVeiculosEmpresa(); }).getVeiculosCadastrados(); }
+      function renderizarVeiculos() {
+        const container = document.getElementById('lista-veiculos'); if (!container) return; container.innerHTML = '';
+        if (!window.listaVeiculos || window.listaVeiculos.length === 0) { container.innerHTML = '<p style="color:var(--texto-muted); font-weight:800; padding:20px;">Nenhum veículo.</p>'; return; }
+        let fDisp = new Set(); let fTipo = new Set(); let fEmpresa = new Set(); let fLotacao = new Set();
+        window.listaVeiculos.forEach(v => { let corStatus = 'var(--texto-muted)'; let disp = String(v.disponibilidade).toLowerCase(); if (disp.includes('dispon')) corStatus = 'var(--verde)'; else if (disp.includes('rota')) corStatus = 'var(--primary)'; else if (disp.includes('manuten')) corStatus = 'var(--vermelho)'; let flagAcess = v.acessibilidade === 'Sim' ? ' ♿' : ''; fDisp.add(v.disponibilidade); fTipo.add(v.veiculo); fEmpresa.add(v.empresa); fLotacao.add(v.lotacao); let botoes = `<div style="margin-top:10px; border-top:1px solid var(--borda); padding-top:10px; display:flex; gap:8px;"><button class="btn-editar" onclick="abrirModalVeiculo('${v.idLinha}')">Editar</button><button class="btn-danger" onclick="excluirVeiculo('${v.idLinha}')">Excluir</button></div>`; container.innerHTML += `<div class="card card-veiculo" data-busca="${v.placa.toLowerCase()} ${v.empresa.toLowerCase()}" data-disp="${v.disponibilidade}" data-tipo="${v.veiculo}" data-emp="${v.empresa}" data-lot="${v.lotacao}"><h4 style="margin:0 0 6px 0; font-size:.88rem;">${v.veiculo} — ${v.placa}${flagAcess}</h4><p style="margin:3px 0; font-size:.75rem;"><strong>Empresa:</strong> ${v.empresa}</p><p style="margin:3px 0; font-size:.75rem;"><strong>Lotação:</strong> ${v.lotacao} lugares</p><p style="margin:3px 0; font-size:.75rem;"><strong>Motorista:</strong> ${v.motorista||'Não atribuído'}</p><p style="margin:3px 0 0 0; font-size:.65rem; color:var(--texto-muted);">Cadastro: ${v.dataCadastro}</p><span class="badge-status" style="color:${corStatus};">${v.disponibilidade}</span>${botoes}</div>`; });
+        popularFiltroSelect('filtro-v-disp', fDisp); popularFiltroSelect('filtro-v-tipo', fTipo); popularFiltroSelect('filtro-v-empresa', fEmpresa); popularFiltroSelect('filtro-v-lotacao', fLotacao);
+      }
+      function renderizarVeiculosEmpresa() { const container = document.getElementById('lista-veiculos-empresa'); if (!container) return; container.innerHTML = ''; if (!window.listaVeiculos || window.listaVeiculos.length === 0) { container.innerHTML = '<p style="color:var(--texto-muted); font-weight:800; padding:20px;">Nenhum veículo cadastrado.</p>'; return; } window.listaVeiculos.forEach(v => { let corStatus = 'var(--texto-muted)'; let disp = String(v.disponibilidade).toLowerCase(); if (disp.includes('dispon')) corStatus = 'var(--verde)'; else if (disp.includes('rota')) corStatus = 'var(--primary)'; else if (disp.includes('manuten')) corStatus = 'var(--vermelho)'; let flagAcess = v.acessibilidade === 'Sim' ? ' ♿' : ''; let botoes = `<div style="margin-top:10px; border-top:1px solid var(--borda); padding-top:10px; display:flex; gap:8px;"><button class="btn-editar" onclick="abrirModalVeiculo('${v.idLinha}')">Editar</button><button class="btn-danger" onclick="excluirVeiculo('${v.idLinha}')">Excluir</button></div>`; container.innerHTML += `<div class="card card-veiculo" data-busca="${v.placa.toLowerCase()} ${v.empresa.toLowerCase()}" data-disp="${v.disponibilidade}" data-tipo="${v.veiculo}"><h4 style="margin:0 0 6px 0; font-size:.88rem;">${v.veiculo} — ${v.placa}${flagAcess}</h4><p style="margin:3px 0; font-size:.75rem;"><strong>Lotação:</strong> ${v.lotacao} lugares</p><p style="margin:3px 0; font-size:.75rem;"><strong>Motorista:</strong> ${v.motorista||'Sem motorista vinculado'}</p><span class="badge-status" style="color:${corStatus};">${v.disponibilidade}</span>${botoes}</div>`; }); }
+      function filtrarVeiculos() { const busca = document.getElementById('filtro-v-busca').value.toLowerCase(); const disp = document.getElementById('filtro-v-disp').value; const tipo = document.getElementById('filtro-v-tipo').value; const emp = document.getElementById('filtro-v-empresa').value; const lot = document.getElementById('filtro-v-lotacao').value; document.querySelectorAll('#lista-veiculos .card-veiculo').forEach(card => { let mostrar = true; if (busca && !card.getAttribute('data-busca').includes(busca)) mostrar = false; if (disp && card.getAttribute('data-disp') !== disp) mostrar = false; if (tipo && card.getAttribute('data-tipo') !== tipo) mostrar = false; if (emp && card.getAttribute('data-emp') !== emp) mostrar = false; if (lot && card.getAttribute('data-lot') !== lot) mostrar = false; card.style.display = mostrar ? '' : 'none'; }); }
+
+      // ============================================
+      // USUÁRIOS, CONFIGURAÇÕES, ESTRUTURAS
+      // ============================================
+      function popularFiltroSelect(idSelect, valoresSet) { const select = document.getElementById(idSelect); if (!select) return; const valorAtual = select.value; select.innerHTML = '<option value="">Todos</option>'; Array.from(valoresSet).sort().forEach(val => { if (val) select.innerHTML += `<option value="${val}">${val}</option>`; }); select.value = valorAtual; }
+      function carregarUsuarios() { if (!window.isAdmin) return; document.getElementById('tabela-usuarios-body').innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--texto-muted); font-weight:800;">Carregando usuários...</td></tr>'; google.script.run.withSuccessHandler(r => { if (r.erro) { document.getElementById('tabela-usuarios-body').innerHTML = `<tr><td colspan="7" style="color:var(--vermelho); text-align:center">${r.erro}</td></tr>`; return; } window.listaUsuarios = r.dados; renderizarUsuarios(); }).getUsuariosAdmin(); }
+      function renderizarUsuarios() { const tbody = document.getElementById('tabela-usuarios-body'); tbody.innerHTML = ''; let fPerfil = new Set(); let fStatus = new Set(); let fUnd = new Set(); window.listaUsuarios.forEach(u => { let stCor = u.ativo.toLowerCase() === 'sim' ? 'var(--verde)' : 'var(--vermelho)'; fPerfil.add(u.perfil); fStatus.add(u.ativo); fUnd.add(u.unidade); let sBusca = `${u.unidade.toLowerCase()} ${u.nome.toLowerCase()} ${u.email.toLowerCase()}`; tbody.innerHTML += `<tr class="linha-usuario" data-busca="${sBusca}" data-perfil="${u.perfil}" data-status="${u.ativo}" data-und="${u.unidade}"><td>${u.unidade}</td><td>${u.funcao}</td><td>${u.nome}</td><td>${u.email}</td><td>${u.perfil}</td><td><span style="color:#fff; background:${stCor}; padding:2px 9px; border-radius:999px; font-size:.65rem; font-weight:900;">${u.ativo}</span></td><td style="white-space:nowrap;"><button class="btn-editar" onclick="abrirModalUsuario('${u.idLinha}')">Editar</button><button class="btn-danger" onclick="excluirUsuario('${u.idLinha}')">Excluir</button></td></tr>`; }); popularFiltroSelect('filtro-u-perfil', fPerfil); popularFiltroSelect('filtro-u-status', fStatus); popularFiltroSelect('filtro-u-und', fUnd); }
+      function filtrarUsuarios() { const busca = document.getElementById('filtro-u-busca').value.toLowerCase(); const perfil = document.getElementById('filtro-u-perfil').value; const status = document.getElementById('filtro-u-status').value; const und = document.getElementById('filtro-u-und').value; document.querySelectorAll('.linha-usuario').forEach(linha => { let mostrar = true; if (busca && !linha.getAttribute('data-busca').includes(busca)) mostrar = false; if (perfil && linha.getAttribute('data-perfil') !== perfil) mostrar = false; if (status && linha.getAttribute('data-status') !== status) mostrar = false; if (und && linha.getAttribute('data-und') !== und) mostrar = false; linha.style.display = mostrar ? '' : 'none'; }); }
+      function abrirModalUsuario(idLinha=null) { const form = document.getElementById('formUsuario'); form.reset(); document.getElementById('admin-usr-linha').value = ''; if (idLinha) { const u = window.listaUsuarios.find(x => String(x.idLinha) === String(idLinha)); if (u) { document.getElementById('admin-usr-linha').value = u.idLinha; document.getElementById('u-unidade').value = u.unidade; document.getElementById('u-funcao').value = u.funcao; document.getElementById('u-nome').value = u.nome; document.getElementById('u-email').value = u.email; document.getElementById('u-perfil').value = u.perfil; document.getElementById('u-ativo').value = u.ativo; } } abrirModal('modal-usuario'); }
+      function salvarUsuario(e) { e.preventDefault(); const btn = document.getElementById('btn-salvar-usr'); btn.disabled = true; btn.innerText = 'Salvando...'; const d = {idLinha: document.getElementById('admin-usr-linha').value, unidade: document.getElementById('u-unidade').value, funcao: document.getElementById('u-funcao').value, nome: document.getElementById('u-nome').value, email: document.getElementById('u-email').value, perfil: document.getElementById('u-perfil').value, ativo: document.getElementById('u-ativo').value}; if (window.MODO_SIMULACAO) { if (!d.idLinha) { d.idLinha = 'SIM_' + Date.now(); window.listaUsuarios.push(d); } else { let idx = window.listaUsuarios.findIndex(x => String(x.idLinha) === String(d.idLinha)); if (idx!==-1) window.listaUsuarios[idx] = d; } fecharModal('modal-usuario'); renderizarUsuarios(); mostrarToast('💻 SIMULAÇÃO: Usuário salvo.', 'warning'); btn.disabled = false; btn.innerText = 'Salvar Usuário'; return; } google.script.run.withSuccessHandler(r => { if (r.sucesso) { fecharModal('modal-usuario'); carregarUsuarios(); mostrarToast('Usuário salvo', 'success'); } else mostrarToast('Erro: ' + r.erro, 'error'); btn.disabled = false; btn.innerText = 'Salvar Usuário'; }).salvarUsuarioAdmin(d); }
+      function excluirUsuario(idLinha) { if (window.MODO_SIMULACAO) { window.listaUsuarios = window.listaUsuarios.filter(x => String(x.idLinha) !== String(idLinha)); renderizarUsuarios(); mostrarToast('💻 SIMULAÇÃO: Excluído.', 'warning'); return; } google.script.run.withSuccessHandler(r => { if (r.sucesso) { carregarUsuarios(); mostrarToast('Excluído!', 'success'); } else mostrarToast("Erro: " + r.erro, 'error'); }).excluirUsuarioAdmin(idLinha); }
+      function carregarEstruturasDinamicas() { if (!window.isAdmin) return; document.getElementById('container-agendas-dinamicas').innerHTML = '<p class="loader">Carregando...</p>'; document.getElementById('container-programacoes-dinamicas').innerHTML = '<p class="loader">Carregando...</p>'; google.script.run.withSuccessHandler(r => { if (r.erro) return; window.agendasDinamicas = r.agendas; window.programacoesDinamicas = r.programacoes; renderizarEstruturas(); }).getEstruturasDinamicas(); }
+      function renderizarEstruturas() { const btnA = document.getElementById('nav-pilulas-agendas'); const viewA = document.getElementById('container-agendas-dinamicas'); btnA.innerHTML = ''; viewA.innerHTML = ''; window.agendasDinamicas.forEach((agenda, idx) => { let idAba = 'agenda_' + idx; let ativoClass = idx === 0 ? 'ativo' : ''; btnA.innerHTML += `<button class="btn-subtab ${ativoClass}" onclick="mudarSubAbaAgenda('${idAba}')">${agenda.nomeExibicao}</button>`; let ths = agenda.cabecalho.map(c => `<th>${c}</th>`).join(''); let trs = ''; agenda.dados.forEach(linhaObj => { let tds = agenda.cabecalho.map(c => `<td>${linhaObj[c]||''}</td>`).join(''); let dataJson = encodeURIComponent(JSON.stringify(linhaObj)).replace(/'/g,"%27"); trs += `<tr>${tds}<td style="white-space:nowrap;"><button class="btn-editar" onclick="abrirModalEstruturaDinamica('${agenda.nomeAba}','${dataJson}','Agenda')">Editar</button><button class="btn-danger" onclick="excluirLinhaEstrutura('${agenda.nomeAba}','${linhaObj.idLinha}')">Excluir</button></td></tr>`; }); let viewClass = idx === 0 ? 'subaba-agenda ativa' : 'subaba-agenda'; viewA.innerHTML += `<div id="subaba-${idAba}" class="${viewClass}"><div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2"><h3 style="margin:0; color:var(--primary); font-size:.95rem;">${agenda.nomeExibicao}</h3><div class="d-flex gap-2"><button class="btn-danger" style="margin:0; padding:6px 12px; font-size:.72rem;" onclick="excluirAbaInteiraEstrutura('${agenda.nomeAba}')">— Apagar Evento</button><button class="btn-submit" style="margin:0; width:auto; padding:6px 14px; font-size:.72rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="abrirModalEstruturaDinamica('${agenda.nomeAba}',null,'Agenda')">+ Adicionar</button></div></div><div class="table-container mb-4" style="overflow-x:auto;"><table><thead><tr>${ths}<th>Ações</th></tr></thead><tbody>${trs}</tbody></table></div></div>`; }); const btnP = document.getElementById('nav-pilulas-programacoes'); const viewP = document.getElementById('container-programacoes-dinamicas'); btnP.innerHTML = ''; viewP.innerHTML = ''; window.programacoesDinamicas.forEach((prog, idx) => { let idAba = 'prog_' + idx; let ativoClass = idx === 0 ? 'ativo' : ''; btnP.innerHTML += `<button class="btn-subtab ${ativoClass}" onclick="mudarSubAbaProg('${idAba}')">${prog.nomeExibicao}</button>`; let ths = prog.cabecalho.map(c => `<th>${c}</th>`).join(''); let trs = ''; prog.dados.forEach(linhaObj => { let tds = prog.cabecalho.map(c => `<td>${linhaObj[c]||''}</td>`).join(''); let dataJson = encodeURIComponent(JSON.stringify(linhaObj)).replace(/'/g,"%27"); trs += `<tr>${tds}<td style="white-space:nowrap;"><button class="btn-editar" onclick="abrirModalEstruturaDinamica('${prog.nomeAba}','${dataJson}','Programacao')">Editar</button><button class="btn-danger" onclick="excluirLinhaEstrutura('${prog.nomeAba}','${linhaObj.idLinha}')">Excluir</button></td></tr>`; }); let viewClass = idx === 0 ? 'subaba-prog ativa' : 'subaba-prog'; viewP.innerHTML += `<div id="subaba-${idAba}" class="${viewClass}"><div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2"><h3 style="margin:0; color:var(--primary); font-size:.95rem;">${prog.nomeExibicao}</h3><div class="d-flex gap-2"><button class="btn-danger" style="margin:0; padding:6px 12px; font-size:.72rem;" onclick="excluirAbaInteiraEstrutura('${prog.nomeAba}')">— Apagar</button><button class="btn-submit" style="margin:0; width:auto; padding:6px 14px; font-size:.72rem; background:var(--verde); border-color:var(--verde); color:#fff;" onclick="abrirModalEstruturaDinamica('${prog.nomeAba}',null,'Programacao')">+ Adicionar</button></div></div><div class="table-container mb-4" style="overflow-x:auto;"><table><thead><tr>${ths}<th>Ações</th></tr></thead><tbody>${trs}</tbody></table></div></div>`; }); }
+      function abrirModalCriarEstrutura(tipo) { let txt = tipo === 'Agenda' ? 'do NOVO EVENTO' : 'da NOVA PROGRAMAÇÃO'; let nome = prompt(`Digite o nome ${txt}:`); if (!nome) return; if (window.MODO_SIMULACAO) return mostrarToast("💻 SIMULAÇÃO: Criação bloqueada.", 'error'); google.script.run.withSuccessHandler(r => { if (r.sucesso) { mostrarToast("Criado!", "success"); carregarEstruturasDinamicas(); } else mostrarToast("Erro: " + r.erro, "error"); }).criarNovaEstruturaAba(nome, tipo); }
+      function excluirAbaInteiraEstrutura(nomeAba) { if (!confirm(`⚠️ Apagar PERMANENTEMENTE a aba "${nomeAba}"?`)) return; if (window.MODO_SIMULACAO) return mostrarToast("💻 SIMULAÇÃO: Exclusão bloqueada.", "error"); google.script.run.withSuccessHandler(r => { if (r.sucesso) { mostrarToast("Apagado!", "success"); carregarEstruturasDinamicas(); } else mostrarToast("Erro: " + r.erro, "error"); }).excluirAbaEstruturaAdmin(nomeAba); }
+      function abrirModalEstruturaDinamica(nomeAba, dadosEncoded, tipo) { let lista = tipo === 'Agenda' ? window.agendasDinamicas : window.programacoesDinamicas; let obj = lista.find(x => x.nomeAba === nomeAba); if (!obj) return; let formContainer = document.getElementById('dinamico-form-inputs'); formContainer.innerHTML = ''; document.getElementById('dinamico-nome-aba').value = obj.nomeAba; let isEdicao = false; let dadosLinha = {}; if (dadosEncoded) { isEdicao = true; dadosLinha = JSON.parse(decodeURIComponent(dadosEncoded)); document.getElementById('dinamico-id-linha').value = dadosLinha.idLinha; } else { document.getElementById('dinamico-id-linha').value = ''; } obj.cabecalho.forEach(col => { let valor = isEdicao ? (dadosLinha[col]||'') : ''; if (col.toLowerCase().includes('data')) { if (valor && valor.includes('/')) { let p = valor.split('/'); valor = `${p[2]}-${p[1]}-${p[0]}`; } formContainer.innerHTML += `<div class="form-group" style="margin-bottom:9px; width:100%;"><label>${col}</label><input type="date" name="dyn_${col}" value="${valor}" required></div>`; } else { formContainer.innerHTML += `<div class="form-group" style="margin-bottom:9px; width:100%;"><label>${col}</label><input type="text" name="dyn_${col}" value="${valor}" required></div>`; } }); abrirModal('modal-agenda-dinamica'); }
+      function salvarEstruturaDinamica(e) { e.preventDefault(); const btn = document.getElementById('btn-salvar-dyn'); btn.disabled = true; btn.innerText = 'Salvando...'; let form = document.getElementById('formAgendaDinamica'); let nomeAba = document.getElementById('dinamico-nome-aba').value; let idLinha = document.getElementById('dinamico-id-linha').value; let obj = window.agendasDinamicas.find(a => a.nomeAba === nomeAba) || window.programacoesDinamicas.find(a => a.nomeAba === nomeAba); let valoresArray = obj.cabecalho.map(col => form.elements[`dyn_${col}`].value); if (window.MODO_SIMULACAO) { mostrarToast('💻 SIMULAÇÃO: Edição bloqueada.', 'warning'); fecharModal('modal-agenda-dinamica'); btn.disabled = false; btn.innerText = 'Salvar Item'; return; } google.script.run.withSuccessHandler(r => { if (r.sucesso) { mostrarToast('Salvo!', 'success'); fecharModal('modal-agenda-dinamica'); carregarEstruturasDinamicas(); } else mostrarToast("Erro: " + r.erro, 'error'); btn.disabled = false; btn.innerText = 'Salvar Item'; }).salvarLinhaEstrutura(nomeAba, idLinha, valoresArray); }
+      function excluirLinhaEstrutura(nomeAba, idLinha) { if (window.MODO_SIMULACAO) return mostrarToast("💻 SIMULAÇÃO: Exclusão bloqueada.", 'warning'); google.script.run.withSuccessHandler(r => { if (r.sucesso) { mostrarToast('Excluído!', 'success'); carregarEstruturasDinamicas(); } else mostrarToast("Erro: " + r.erro, 'error'); }).excluirLinhaEstrutura(nomeAba, idLinha); }
+      function carregarConfiguracoes() { if (!window.isAdmin) return; document.getElementById('tabela-config-body').innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--texto-muted); font-weight:800;">Carregando...</td></tr>'; google.script.run.withSuccessHandler(r => { if (r.erro) { document.getElementById('tabela-config-body').innerHTML = `<tr><td colspan="4" style="color:var(--vermelho); text-align:center">${r.erro}</td></tr>`; return; } window.listaConfig = r.dados; renderizarConfiguracoes(); }).getConfigAdmin(); }
+      function renderizarConfiguracoes() { const tbody = document.getElementById('tabela-config-body'); tbody.innerHTML = ''; if (!window.listaConfig || window.listaConfig.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--texto-muted); font-weight:800;">Nenhuma variável cadastrada. Clique em "+ Nova Regra".</td></tr>'; return; } window.listaConfig.forEach(c => { tbody.innerHTML += `<tr class="linha-cfg" data-busca="${c.chave.toLowerCase()} ${c.descricao.toLowerCase()}"><td style="font-weight:800">${c.chave}</td><td>${c.valor}</td><td>${c.descricao}</td><td style="white-space:nowrap;"><button class="btn-editar" onclick="abrirModalConfig('${c.idLinha}')">Editar</button><button class="btn-danger" onclick="excluirConfig('${c.idLinha}')">Excluir</button></td></tr>`; }); }
+      function filtrarConfig() { const b = document.getElementById('filtro-cfg-busca').value.toLowerCase(); document.querySelectorAll('.linha-cfg').forEach(l => l.style.display = (!b || l.getAttribute('data-busca').includes(b)) ? '' : 'none'); }
+      function abrirModalConfig(idLinha=null) { const form = document.getElementById('formConfig'); form.reset(); document.getElementById('admin-cfg-linha').value = ''; if (idLinha) { const c = window.listaConfig.find(x => String(x.idLinha) === String(idLinha)); if (c) { document.getElementById('admin-cfg-linha').value = c.idLinha; document.getElementById('cfg-chave').value = c.chave; document.getElementById('cfg-valor').value = c.valor; document.getElementById('cfg-desc').value = c.descricao; } } abrirModal('modal-config'); }
+      function salvarConfig(e) { e.preventDefault(); const btn = document.getElementById('btn-salvar-cfg'); btn.disabled = true; btn.innerText = 'Salvando...'; const d = {idLinha: document.getElementById('admin-cfg-linha').value, chave: document.getElementById('cfg-chave').value.toUpperCase().replace(/\s+/g,'_'), valor: document.getElementById('cfg-valor').value, descricao: document.getElementById('cfg-desc').value}; if (window.MODO_SIMULACAO) { if (!d.idLinha) { d.idLinha = 'SIM_' + Date.now(); window.listaConfig.unshift(d); } else { let idx = window.listaConfig.findIndex(x => String(x.idLinha) === String(d.idLinha)); if (idx!==-1) window.listaConfig[idx] = d; } fecharModal('modal-config'); renderizarConfiguracoes(); mostrarToast('💻 SIMULAÇÃO: Regra salva.', 'warning'); btn.disabled = false; btn.innerText = 'Salvar Regra'; return; } google.script.run.withSuccessHandler(r => { if (r.sucesso) { fecharModal('modal-config'); carregarConfiguracoes(); mostrarToast('Salvo!', 'success'); } else mostrarToast('Erro: ' + r.erro, 'error'); btn.disabled = false; btn.innerText = 'Salvar Regra'; }).salvarConfigAdmin(d); }
+      function excluirConfig(idLinha) { if (window.MODO_SIMULACAO) { window.listaConfig = window.listaConfig.filter(x => String(x.idLinha) !== String(idLinha)); renderizarConfiguracoes(); mostrarToast('💻 SIMULAÇÃO: Excluído.', 'warning'); return; } google.script.run.withSuccessHandler(r => { if (r.sucesso) { carregarConfiguracoes(); mostrarToast('Excluído!', 'success'); } else mostrarToast("Erro: " + r.erro, 'error'); }).excluirConfigAdmin(idLinha); }
+
+      // ==========================================
+      // RESERVAS DE FROTA
+      // ==========================================
+      window.listaReservas = window.listaReservas || [];
+      function abrirModalReserva() { document.getElementById('formReserva').reset(); document.getElementById('res-id').value = ''; abrirModal('modal-reserva'); }
+      function renderizarReservas() { const tbody = document.getElementById('tabela-reservas-body'); if (!tbody) return; tbody.innerHTML = ''; if (!window.listaReservas || window.listaReservas.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--texto-muted); font-weight:800;">Nenhuma reserva ativa.</td></tr>'; return; } let hoje = new Date(); hoje.setHours(0,0,0,0); window.listaReservas.forEach(r => { let pExp = r.dataExpira.split('/'); let expDate = new Date(`${pExp[2]}-${pExp[1]}-${pExp[0]}T23:59:59`); let expirou = hoje > expDate; let statusTag = expirou ? `<span style="background:var(--vermelho); color:#fff; padding:2px 7px; border-radius:5px; font-size:.65rem; font-weight:900;">Expirada</span>` : `<span style="background:var(--verde); color:#fff; padding:2px 7px; border-radius:5px; font-size:.65rem; font-weight:900;">Ativa</span>`; tbody.innerHTML += `<tr style="${expirou ? 'opacity:.6;' : ''}"><td><strong>${r.data}</strong></td><td>${r.periodo}</td><td>🚌 ${r.qtd}</td><td>${r.evento}</td><td>${r.dataExpira}<br>${statusTag}</td><td><button class="btn-danger" style="padding:4px 8px; font-size:.68rem;" onclick="excluirReservaLoc('${r.idReserva}')">Remover</button></td></tr>`; }); }
+      function salvarReserva(e) { e.preventDefault(); let btn = document.getElementById('btn-salvar-reserva'); btn.disabled = true; btn.innerText = 'Salvando...'; let pD = document.getElementById('res-data') ? document.getElementById('res-data').value.split('-') : ['2024','01','01']; let pE = document.getElementById('res-expira').value.split('-'); let payload = {idReserva: document.getElementById('res-id').value || 'RES_' + Date.now(), data: `${pD[2]}/${pD[1]}/${pD[0]}`, periodo: document.getElementById('res-periodo').value, qtd: document.getElementById('res-qtd').value, evento: document.getElementById('res-evento-select').value, dataExpira: `${pE[2]}/${pE[1]}/${pE[0]}`}; window.listaReservas.unshift(payload); renderizarReservas(); fecharModal('modal-reserva'); mostrarToast('Reserva criada!', 'success'); btn.disabled = false; btn.innerText = '🔒 Salvar Reserva'; }
+      function excluirReservaLoc(id) { if (!confirm('Remover este bloqueio?')) return; window.listaReservas = window.listaReservas.filter(x => x.idReserva !== id); renderizarReservas(); mostrarToast('Reserva removida.', 'success'); }
+      window.datasReservaSelecionadas = [];
+      function toggleOutrosReserva() { const sel = document.getElementById('res-evento-select'); const grupoOutros = document.getElementById('res-grupo-outros'); const inputOutro = document.getElementById('res-evento-outro'); if (sel.value === 'Outros') { grupoOutros.style.display = 'block'; inputOutro.required = true; } else { grupoOutros.style.display = 'none'; inputOutro.required = false; } }
+      function gerenciarDataReserva(dataISO) { const idx = window.datasReservaSelecionadas.indexOf(dataISO); if (idx === -1) window.datasReservaSelecionadas.push(dataISO); else window.datasReservaSelecionadas.splice(idx, 1); atualizarVisualDatasReserva(); }
+      function atualizarVisualDatasReserva() { const container = document.getElementById('res-container-datas'); const hiddenInput = document.getElementById('res-datas-json'); if (window.datasReservaSelecionadas.length === 0) { container.innerHTML = '<small style="opacity:.6; color:var(--texto-muted);">Clique nos dias do calendário para adicionar...</small>'; hiddenInput.value = ''; return; } container.innerHTML = window.datasReservaSelecionadas.map(d => { let dBr = d.split('-').reverse().join('/'); return `<span style="background:var(--primary); color:var(--neon-blue); padding:2px 9px; border-radius:999px; font-size:.68rem; font-weight:900;">${dBr}</span>`; }).join(''); hiddenInput.value = JSON.stringify(window.datasReservaSelecionadas); document.querySelectorAll('.btn-cal-res').forEach(btn => { btn.style.background = window.datasReservaSelecionadas.includes(btn.dataset.iso) ? 'var(--laranja)' : 'transparent'; btn.style.color = window.datasReservaSelecionadas.includes(btn.dataset.iso) ? '#fff' : 'inherit'; }); }
+
+      // ══════════════════════════════════════════════════
+      //  SIDEBAR ADMIN  (v4)
+      // ══════════════════════════════════════════════════
+
+      function toggleAdminSidebar() {
+        const sb = document.getElementById('admin-sidebar');
+        if (!sb) return;
+        const expandida = sb.classList.toggle('expandida');
+        // Atualiza a variável CSS que controla margin-left do conteúdo
+        document.documentElement.style.setProperty('--sb-w', expandida ? '220px' : '60px');
+      }
+
+      // Override mudarAbaAdmin para atualizar itens da sidebar
+      const originalMudarAbaAdmin = window.mudarAbaAdmin;
+      window.mudarAbaAdmin = function(abaId) {
+        if (originalMudarAbaAdmin) originalMudarAbaAdmin(abaId);
+        // Atualizar visual da sidebar
+        document.querySelectorAll('.admin-sb-item').forEach(btn => {
+          btn.classList.remove('ativo');
+        });
+        const abaMap = {
+          'pedidos': 0, 'veiculos': 1, 'frota-datas': 2, 'usuarios': 3,
+          'programacoes': 4, 'agendas': 5, 'midia': 6, 'configuracoes': 7, 'reservas': 8
+        };
+        const items = document.querySelectorAll('.admin-sb-item');
+        const idx = abaMap[abaId];
+        if (idx !== undefined && items[idx]) items[idx].classList.add('ativo');
+        // Carregar dados da aba
+        if (abaId === 'reservas') renderizarReservas();
+        if (abaId === 'frota-datas') {
+          // Sincronizar campos com valores atuais
+          let iM = document.getElementById('cfg-frota-manha');
+          let iT = document.getElementById('cfg-frota-tarde');
+          if (iM) iM.value = window.frotaManha || 6;
+          if (iT) iT.value = window.frotaTarde || 6;
+          previewFrotaPadrao();
+          atualizarKpiFrotaDatas();
+          renderizarMesFrota();
+          renderizarTabelaFrotaDatas();
+        }
+      };
+
+      // ══════════════════════════════════════════════════
+      //  FROTA PADRÃO POR PERÍODO  (v4)
+      // ══════════════════════════════════════════════════
+
+      function previewFrotaPadrao() {
+        let m = parseInt(document.getElementById('cfg-frota-manha')?.value) || 0;
+        let t = parseInt(document.getElementById('cfg-frota-tarde')?.value) || 0;
+        let total = m + t;
+        let el = document.getElementById('preview-total-frota');
+        if (!el) return;
+        let cor = total > window.FROTA_MAXIMA_DIA ? 'var(--laranja)' : 'var(--primary)';
+        el.innerText = `${total} ônibus/dia`;
+        el.style.color = cor;
+        el.style.borderColor = total > window.FROTA_MAXIMA_DIA ? 'var(--laranja)' : 'var(--borda)';
+      }
+
+      function salvarFrotaPadrao() {
+        let m = parseInt(document.getElementById('cfg-frota-manha')?.value);
+        let t = parseInt(document.getElementById('cfg-frota-tarde')?.value);
+        if (isNaN(m) || isNaN(t) || m < 0 || t < 0) {
+          mostrarToast('Informe valores válidos (zero ou positivo).', 'error'); return;
+        }
+        let total = m + t;
+        // Alerta se ultrapassar o limite diário
+        if (total > window.FROTA_MAXIMA_DIA) {
+          let confirmado = confirm(
+            `⚠️ ATENÇÃO: Você está configurando ${total} ônibus por dia (${m} manhã + ${t} tarde),\n` +
+            `ultrapassando o limite padrão de ${window.FROTA_MAXIMA_DIA} ônibus/dia.\n\n` +
+            `Tem certeza que deseja salvar esta configuração?`
+          );
+          if (!confirmado) return;
+        }
+        window.frotaManha = m;
+        window.frotaTarde = t;
+        // Salvar em localStorage para persistência local
+        localStorage.setItem('sate_frota_manha', m);
+        localStorage.setItem('sate_frota_tarde', t);
+        // Atualizar texto informativo
+        let txt = document.getElementById('txt-frota-padrao');
+        if (txt) txt.innerText = `${m} manhã + ${t} tarde`;
+        atualizarKpiFrotaDatas();
+        renderizarMesFrota();
+        renderizarMes(); // Atualizar calendário da escola
+        mostrarToast(`✅ Frota padrão salva: ${m} manhã + ${t} tarde (${total}/dia).`, 'success');
+        // Se admin, salvar nas configurações do sistema via backend
+        if (window.isAdmin && !window.MODO_SIMULACAO) {
+          google.script.run.withSuccessHandler(() => {}).salvarConfigAdmin({idLinha:'', chave:'FROTA_MANHA', valor: String(m), descricao:'Ônibus disponíveis no período da manhã'});
+          google.script.run.withSuccessHandler(() => {}).salvarConfigAdmin({idLinha:'', chave:'FROTA_TARDE', valor: String(t), descricao:'Ônibus disponíveis no período da tarde'});
+        }
+      }
+
+      // Carregar frota salva do localStorage ao iniciar
+      (function() {
+        let m = parseInt(localStorage.getItem('sate_frota_manha'));
+        let t = parseInt(localStorage.getItem('sate_frota_tarde'));
+        if (!isNaN(m) && m >= 0) window.frotaManha = m;
+        if (!isNaN(t) && t >= 0) window.frotaTarde = t;
+      })();
+
+      // ══════════════════════════════════════════════════
+      //  DISPONIBILIDADE DE FROTA POR DATA  (v3)
+      // ══════════════════════════════════════════════════
+
+      function salvarExcecoesFrota() {
+        localStorage.setItem('sate_frota_excecoes', JSON.stringify(window.excecoesFrotaPorData));
+      }
+
+      function atualizarKpiFrotaDatas() {
+        let el = (id) => document.getElementById(id);
+        if (!el('kpi-frota-padrao')) return;
+        el('kpi-frota-padrao').innerText = `${window.frotaManha || 6}M + ${window.frotaTarde || 6}T`;
+        el('kpi-frota-excecoes').innerText = (window.excecoesFrotaPorData || []).filter(e => e.ativo).length;
+        let hoje = new Date(); hoje.setHours(0,0,0,0);
+        let hojeISO = hoje.toISOString().split('T')[0];
+        el('kpi-frota-hoje').innerText = getOnibusDisponiveisNoPeriodo(hojeISO, 'Manhã');
+        let menorDisp = Math.max(window.frotaManha || 6, window.frotaTarde || 6);
+        for (let i = 0; i < 7; i++) {
+          let d = new Date(hoje); d.setDate(d.getDate() + i);
+          let iso = d.toISOString().split('T')[0];
+          let m = getOnibusDisponiveisNoPeriodo(iso, 'Manhã');
+          let t = getOnibusDisponiveisNoPeriodo(iso, 'Tarde');
+          if (m < menorDisp) menorDisp = m;
+          if (t < menorDisp) menorDisp = t;
+        }
+        el('kpi-frota-semana').innerText = menorDisp;
+      }
+
+      function mudarMesFrota(step) {
+        window.calFrotaAtual.setMonth(window.calFrotaAtual.getMonth() + step);
+        renderizarMesFrota();
+      }
+
+      function renderizarMesFrota() {
+        const grade = document.getElementById('grade-frota-mes'); if (!grade) return;
+        const mesesNomes = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+        const ano = window.calFrotaAtual.getFullYear(); const mes = window.calFrotaAtual.getMonth();
+        document.getElementById('frota-mes-titulo').innerText = `${mesesNomes[mes]} / ${ano}`;
+        const diasSemana = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+        let html = diasSemana.map(d => `<div style="text-align:center; font-size:.6rem; font-weight:900; color:var(--texto-muted); padding:4px;">${d}</div>`).join('');
+        let primeiroDia = new Date(ano, mes, 1).getDay();
+        let diasNoMes = new Date(ano, mes + 1, 0).getDate();
+        for (let i = 0; i < primeiroDia; i++) html += `<div></div>`;
+        for (let dia = 1; dia <= diasNoMes; dia++) {
+          let dataISO = `${ano}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+          let diaSemana = new Date(dataISO + 'T00:00:00').getDay();
+          let isWkd = diaSemana === 0 || diaSemana === 6;
+          let onibusManha = getOnibusDisponiveisNoPeriodo(dataISO, 'Manhã');
+          let onibusTarde = getOnibusDisponiveisNoPeriodo(dataISO, 'Tarde');
+          let menor = Math.min(onibusManha, onibusTarde);
+          let total = window.totalFrotaAtiva || 1;
+          let pct = Math.round((menor / total) * 100);
+          let bg = isWkd ? 'var(--input-disabled)' : (menor === 0 ? '#fde8e8' : pct < 50 ? '#fff3cd' : '#d4edda');
+          let cor = isWkd ? 'var(--texto-muted)' : (menor === 0 ? 'var(--vermelho)' : pct < 50 ? '#856404' : 'var(--verde)');
+          let temExcecao = window.excecoesFrotaPorData.some(ex => ex.ativo && dataISO >= ex.dataInicio && dataISO <= (ex.dataFim || ex.dataInicio));
+          let marcador = temExcecao ? '⚙' : '';
+          html += `<div style="background:${bg}; color:${cor}; text-align:center; padding:6px 2px; border-radius:6px; cursor:pointer; border:1px solid rgba(0,0,0,.06);"
+            onclick="abrirModalFrotaData('${dataISO}')" title="${dataISO}: ${onibusManha} manhã / ${onibusTarde} tarde">
+            <div style="font-size:.65rem; font-weight:900;">${dia}${marcador}</div>
+            ${isWkd ? '<div style="font-size:.55rem;">-</div>' : `<div style="font-size:.55rem; font-weight:800;">${menor}🚌</div>`}
+          </div>`;
+        }
+        grade.innerHTML = html;
+      }
+
+      function abrirModalFrotaData(dataPreSelecionada = '') {
+        const modal = document.getElementById('modal-frota-data');
+        document.getElementById('fd-id').value = '';
+        document.getElementById('fd-inicio').value = dataPreSelecionada || '';
+        document.getElementById('fd-fim').value = dataPreSelecionada || '';
+        document.getElementById('fd-periodo').value = 'Integral';
+        document.getElementById('fd-qtd').value = '';
+        document.getElementById('fd-motivo').value = '';
+        abrirModal('modal-frota-data');
+      }
+
+      function editarExcecaoFrota(id) {
+        let ex = window.excecoesFrotaPorData.find(x => x.id === id); if (!ex) return;
+        document.getElementById('fd-id').value = id;
+        document.getElementById('fd-inicio').value = ex.dataInicio;
+        document.getElementById('fd-fim').value = ex.dataFim || ex.dataInicio;
+        document.getElementById('fd-periodo').value = ex.periodo;
+        document.getElementById('fd-qtd').value = ex.qtdOnibus;
+        document.getElementById('fd-motivo').value = ex.motivo;
+        abrirModal('modal-frota-data');
+      }
+
+      function salvarExcecaoFrota(e) {
+        e.preventDefault();
+        let id = document.getElementById('fd-id').value || 'FD_' + Date.now();
+        let inicio = document.getElementById('fd-inicio').value;
+        let fim = document.getElementById('fd-fim').value || inicio;
+        let qtd = parseInt(document.getElementById('fd-qtd').value);
+        if (fim < inicio) { mostrarToast('Data fim não pode ser anterior à data início.', 'error'); return; }
+        let nova = { id, dataInicio: inicio, dataFim: fim, periodo: document.getElementById('fd-periodo').value, qtdOnibus: qtd, motivo: document.getElementById('fd-motivo').value, ativo: true };
+        let idx = window.excecoesFrotaPorData.findIndex(x => x.id === id);
+        if (idx !== -1) window.excecoesFrotaPorData[idx] = nova;
+        else window.excecoesFrotaPorData.unshift(nova);
+        salvarExcecoesFrota();
+        fecharModal('modal-frota-data');
+        atualizarKpiFrotaDatas(); renderizarMesFrota(); renderizarTabelaFrotaDatas(); renderizarMes();
+        mostrarToast('Disponibilidade salva! Calendário atualizado.', 'success');
+      }
+
+      function excluirExcecaoFrota(id) {
+        if (!confirm('Remover esta exceção de disponibilidade?')) return;
+        window.excecoesFrotaPorData = window.excecoesFrotaPorData.filter(x => x.id !== id);
+        salvarExcecoesFrota();
+        atualizarKpiFrotaDatas(); renderizarMesFrota(); renderizarTabelaFrotaDatas(); renderizarMes();
+        mostrarToast('Exceção removida.', 'success');
+      }
+
+      function limparExcecoesExpiradas() {
+        let hoje = new Date().toISOString().split('T')[0];
+        let antes = window.excecoesFrotaPorData.length;
+        window.excecoesFrotaPorData = window.excecoesFrotaPorData.filter(ex => (ex.dataFim || ex.dataInicio) >= hoje);
+        let depois = window.excecoesFrotaPorData.length;
+        salvarExcecoesFrota();
+        atualizarKpiFrotaDatas(); renderizarMesFrota(); renderizarTabelaFrotaDatas();
+        mostrarToast(`${antes - depois} exceção(ões) expirada(s) removida(s).`, 'success');
+      }
+
+      function renderizarTabelaFrotaDatas() {
+        const tbody = document.getElementById('tabela-frota-datas-body'); if (!tbody) return;
+        if (!window.excecoesFrotaPorData || window.excecoesFrotaPorData.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--texto-muted); font-weight:800;">Nenhuma exceção cadastrada. O sistema usa a frota padrão de <strong>${window.totalFrotaAtiva}</strong> ônibus para todas as datas.</td></tr>`;
+          return;
+        }
+        let hoje = new Date().toISOString().split('T')[0];
+        tbody.innerHTML = window.excecoesFrotaPorData.map(ex => {
+          let dFim = ex.dataFim || ex.dataInicio;
+          let expirado = dFim < hoje;
+          let statusTag = expirado
+            ? `<span style="background:var(--vermelho);color:#fff;padding:2px 7px;border-radius:5px;font-size:.65rem;font-weight:900;">Expirada</span>`
+            : `<span style="background:var(--verde);color:#fff;padding:2px 7px;border-radius:5px;font-size:.65rem;font-weight:900;">Ativa</span>`;
+          let dInicioFmt = ex.dataInicio.split('-').reverse().join('/');
+          let dFimFmt = dFim.split('-').reverse().join('/');
+          return `<tr style="${expirado ? 'opacity:.55;' : ''}">
+            <td><strong>${dInicioFmt}</strong></td>
+            <td>${dFimFmt}</td>
+            <td><span style="background:var(--azul-claro);color:var(--primary);padding:2px 8px;border-radius:6px;font-size:.72rem;font-weight:800;">${ex.periodo}</span></td>
+            <td style="font-size:1rem; font-weight:900; color:var(--primary);">🚌 ${ex.qtdOnibus} <small style="font-size:.65rem; color:var(--texto-muted); font-weight:600;">(padrão: ${window.totalFrotaAtiva})</small></td>
+            <td style="font-size:.78rem;">${ex.motivo || '-'}</td>
+            <td>${statusTag}</td>
+            <td style="white-space:nowrap;">
+              <button class="btn-editar" onclick="editarExcecaoFrota('${ex.id}')">Editar</button>
+              <button class="btn-danger" onclick="excluirExcecaoFrota('${ex.id}')">Excluir</button>
+            </td>
+          </tr>`;
+        }).join('');
+      }
+
+      // ══════════════════════════════════════════════════
+      //  DUPLICAR PEDIDO  (v3)
+      // ══════════════════════════════════════════════════
+
+      function duplicarPedido(idLinhasStr) {
+        let p = window.todosPedidos.find(x => String(x.idLinhas) === String(idLinhasStr)); if (!p) return;
+        document.getElementById('formPedido').reset();
+        document.getElementById('form-edicao-linhas').value = ''; // Novo pedido, não edição
+        window.pedidoAtualEdicaoOriginal = null;
+        document.getElementById('form-unidade').value = p.unidade;
+        mudouUnidade();
+        document.getElementById('form-origem').value = p.origem;
+        document.getElementById('form-destino').value = p.destino;
+        let evBusca = p.evento.startsWith('Outros:') ? 'Outros' : p.evento;
+        document.getElementById('form-evento').value = evBusca;
+        // Data em branco para o usuário escolher a nova data
+        document.getElementById('form-data').value = '';
+        document.getElementById('form-periodo').value = p.periodo;
+        document.getElementById('form-ida').value = p.idaPartida;
+        if (document.getElementById('form-volta')) document.getElementById('form-volta').value = p.voltaPartida || '';
+        document.getElementById('form-resp').value = p.responsavel;
+        document.getElementById('form-tel').value = p.telefone;
+        document.getElementById('form-qtd').value = p.qtdAlunos;
+        document.getElementById('form-obs').value = p.observacoes || '';
+        if (p.tituloOutros) document.getElementById('form-titulo-outros').value = p.tituloOutros;
+        if (p.acessibilidade === 'SIM') { document.getElementById('form-acess').checked = true; document.getElementById('form-qtd-adaptado').value = p.qtdAdaptado; }
+        toggleQtdAdaptado();
+        let turmasAtuais = p.turmas.split(', ');
+        document.querySelectorAll('input[name="turma-selecao"]').forEach(chk => { if (turmasAtuais.includes(chk.value)) chk.checked = true; });
+        validarMistura();
+        abrirModal('modal-formulario');
+        mostrarToast('📋 Pedido duplicado! Escolha a nova data e envie.', 'warning');
+      }
+
+      // ══════════════════════════════════════════════════
+      //  VERIFICAR PEDIDO DUPLICADO  (v3)
+      // ══════════════════════════════════════════════════
+
+      function verificarDuplicado() {
+        const data = document.getElementById('form-data').value;
+        const periodo = document.getElementById('form-periodo').value;
+        const unidade = document.getElementById('form-unidade').value;
+        const alerta = document.getElementById('alerta-duplicado');
+        const textoAlerta = document.getElementById('alerta-duplicado-texto');
+        if (!alerta) return;
+        if (!data || !unidade) { alerta.style.display = 'none'; return; }
+        const dataBR = data.split('-').reverse().join('/');
+        const idEditando = document.getElementById('form-edicao-linhas').value;
+        let conflito = (window.todosPedidos || []).find(p => {
+          if (String(p.idLinhas) === String(idEditando)) return false;
+          let st = String(p.status).toLowerCase();
+          if (st.includes('cancel') || st.includes('recus')) return false;
+          return p.data === dataBR && p.unidade === unidade && p.periodo === periodo;
+        });
+        if (conflito) {
+          textoAlerta.innerHTML = `Já existe um pedido para <strong>${unidade}</strong> em <strong>${dataBR} (${periodo})</strong> com status "<strong>${conflito.status}</strong>". Verifique antes de continuar.`;
+          alerta.style.display = 'block';
+        } else {
+          alerta.style.display = 'none';
+        }
+      }
+
+      // ══════════════════════════════════════════════════
+      //  MOTIVO DE RECUSA VISÍVEL NO CARD  (v3)
+      // ══════════════════════════════════════════════════
+
+      // Override de renderizarVisaoEscola para incluir motivo de recusa
+      const _renderizarVisaoEscolaOriginal = window.renderizarVisaoEscola || function(){};
+      function renderizarVisaoEscola() {
+        const containerCards = document.getElementById('meus-cards'); const tbodyLista = document.getElementById('tabela-escola-body'); const divPaginacao = document.getElementById('controles-paginacao');
+        if (!containerCards || !tbodyLista) return; containerCards.innerHTML = ''; tbodyLista.innerHTML = '';
+        try {
+          window.pedidosFiltrados.sort((a, b) => { if (a.unidade < b.unidade) return -1; if (a.unidade > b.unidade) return 1; let dA = a.data.split('/').reverse().join('-'); let dB = b.data.split('/').reverse().join('-'); if (dA < dB) return -1; if (dA > dB) return 1; if (a.evento < b.evento) return -1; if (a.evento > b.evento) return 1; return 0; });
+          let itensExibidos = window.pedidosFiltrados;
+          if (!window.escolaModoLista) { const totalPaginas = Math.ceil(window.pedidosFiltrados.length / ITENS_POR_PAGINA); if (window.paginaAtual < 1) window.paginaAtual = 1; if (window.paginaAtual > totalPaginas) window.paginaAtual = totalPaginas; const inicio = (window.paginaAtual-1) * ITENS_POR_PAGINA; const fim = inicio + ITENS_POR_PAGINA; itensExibidos = window.pedidosFiltrados.slice(inicio, fim); if (window.pedidosFiltrados.length > ITENS_POR_PAGINA) { divPaginacao.style.display = 'flex'; document.getElementById('info-pagina').innerText = `Página ${window.paginaAtual} de ${totalPaginas}`; document.getElementById('btn-prev').disabled = (window.paginaAtual===1); document.getElementById('btn-next').disabled = (window.paginaAtual===totalPaginas); } else { divPaginacao.style.display = 'none'; } } else { divPaginacao.style.display = 'none'; }
+          if (itensExibidos.length === 0) { containerCards.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--texto-muted); font-weight:800;">Nenhum pedido encontrado.</p>'; tbodyLista.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum pedido encontrado.</td></tr>'; return; }
+          itensExibidos.forEach(p => {
+            let sTxt = String(p.status||'').toLowerCase(); let corStatus = 'var(--vermelho)'; let jaCancelado = sTxt.includes('cancel')||sTxt.includes('recus')||sTxt.includes('reprov'); let podeEditar = !jaCancelado && !sTxt.includes('aprov') && !sTxt.includes('rota') && !sTxt.includes('concl');
+            let botoesAcao = '';
+            if (podeEditar) botoesAcao = `<button class="btn-editar" onclick="event.stopPropagation(); abrirEdicaoPedido('${p.idLinhas}')">Editar</button><button class="btn-submit" style="background:var(--azul-claro);color:var(--primary);border-color:var(--primary);margin:0;padding:5px 10px;font-size:.72rem;width:auto;" onclick="event.stopPropagation(); duplicarPedido('${p.idLinhas}')">Duplicar</button><button class="btn-danger" onclick="event.stopPropagation(); abrirModalCancelamento('${p.idLinhas}')">Cancelar</button>`;
+            else if (!jaCancelado) botoesAcao = `<button class="btn-submit" style="background:var(--azul-claro);color:var(--primary);border-color:var(--primary);margin:0;padding:5px 10px;font-size:.72rem;width:auto;" onclick="event.stopPropagation(); duplicarPedido('${p.idLinhas}')">Duplicar</button><button class="btn-danger" onclick="event.stopPropagation(); abrirModalCancelamento('${p.idLinhas}')">Pedir Cancelamento</button>`;
+            else botoesAcao = `<button class="btn-submit" style="background:var(--azul-claro);color:var(--primary);border-color:var(--primary);margin:0;padding:5px 10px;font-size:.72rem;width:auto;" onclick="event.stopPropagation(); duplicarPedido('${p.idLinhas}')">Duplicar</button><small style="color:var(--texto-muted); font-weight:700;">Encerrado</small>`;
+            if (sTxt.includes('análise')||sTxt.includes('analise')||sTxt.includes('novo')) corStatus = 'var(--primary)'; else if (sTxt.includes('concl')||sTxt.includes('aprov')||sTxt.includes('rota')) corStatus = 'var(--verde)';
+
+            // Motivo de recusa visível
+            let motivoRecusaHtml = '';
+            if (jaCancelado && p.historico) {
+              let match = p.historico.match(/Motivo[:\s]+([^[\n]+)/i);
+              if (match && match[1]) motivoRecusaHtml = `<div style="background:#fde8e8; border:1px solid var(--vermelho); border-radius:8px; padding:7px 10px; margin-top:8px; font-size:.72rem; color:#7f1d1d; font-weight:700;">❌ Motivo: ${match[1].trim()}</div>`;
+            }
+            // Horário de retorno
+            let voltaHtml = p.voltaPartida ? `<p style="margin:3px 0; font-size:.78rem;"><strong>Retorno:</strong> ${p.voltaPartida}</p>` : '';
+
+            containerCards.innerHTML += `<div class="card" style="border-top-color:${corStatus}; cursor:pointer;" onclick="abrirDetalhesCard('${p.idLinhas}')"><h3 style="margin:0 0 8px 0; color:${corStatus}; font-size:.9rem;">${p.evento}</h3><p style="margin:3px 0; font-size:.78rem;"><strong>Unidade:</strong> ${p.unidade}</p><p style="margin:3px 0; font-size:.78rem;"><strong>Data:</strong> ${p.data} (${p.periodo})</p><p style="margin:3px 0; font-size:.78rem;"><strong>Saída:</strong> ${p.idaPartida||'-'}</p>${voltaHtml}<p style="margin:3px 0; font-size:.78rem;"><strong>Turmas:</strong> ${p.turmas} (${p.qtdAlunos} passageiros)</p><p style="margin:3px 0; font-size:.78rem;"><strong>Destino:</strong> ${p.destino}</p><span style="display:inline-block; padding:4px 11px; margin:10px 0 0 0; border-radius:999px; font-size:.67rem; font-weight:900; background:var(--azul-claro); color:${corStatus};">${p.status}</span>${motivoRecusaHtml}<div style="border-top:1px solid var(--borda); padding-top:10px; margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">${botoesAcao}</div></div>`;
+            tbodyLista.innerHTML += `<tr><td>${p.data}<br><small style="color:var(--texto-muted);">${p.periodo}</small></td><td style="font-weight:800;">${p.unidade}</td><td>${p.evento}</td><td>${p.qtdAlunos}</td><td><span style="background:${corStatus}; color:#fff; padding:3px 8px; border-radius:999px; font-size:.65rem; font-weight:900;">${p.status}</span></td><td style="white-space:nowrap;">${botoesAcao}</td></tr>`;
+          });
+        } catch (e) { containerCards.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:var(--laranja);">Erro: ${e.message}</p>`; }
+      }
+
+    </script>
+  </body>
+</html>

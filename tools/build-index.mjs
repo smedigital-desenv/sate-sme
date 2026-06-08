@@ -1,0 +1,70 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const root = process.cwd();
+const read = p => fs.readFileSync(path.join(root, p), 'utf8');
+
+const index = `<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SATE - Transporte Escolar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="./css/styles.css">
+  </head>
+  <body>
+    <div id="toast-container"></div>
+
+    <header class="nav-header">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="nav-brand-icon">🚌</div>
+          <div>
+            <div class="nav-brand-title">SATE</div>
+            <div class="nav-brand-sub">Sistema de Agendamento do Transporte Escolar</div>
+          </div>
+        </div>
+
+        <div class="nav-tabs-mapa">
+          <input type="radio" name="mainNav" id="navEscola" checked>
+          <label for="navEscola" onclick="mudarTela('escola')">🏫 Escola</label>
+
+          <input type="radio" name="mainNav" id="navAdmin">
+          <label for="navAdmin" id="label-admin" onclick="mudarTela('admin')" style="display:none;">⚙️ Administração</label>
+
+          <input type="radio" name="mainNav" id="navEmpresa">
+          <label for="navEmpresa" id="label-empresa" onclick="mudarTela('empresa')" style="display:none;">🚌 Empresa</label>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <button id="btn-nova-sol-global" class="nav-btn nav-btn-verde" onclick="abrirModal('modal-formulario')" style="display:none;">➕ Nova Solicitação</button>
+          <button id="btn-visao-escola" class="nav-btn nav-btn-roxo" onclick="toggleVisaoEscola()" style="display:none;">👁️ Visão: Admin</button>
+          <button id="btn-simulacao" class="nav-btn nav-btn-danger" onclick="toggleSimulacao()" style="display:none;">💻 SIMULAÇÃO (ON)</button>
+          <button id="btn-dark-mode" class="nav-btn nav-btn-dark" onclick="toggleDarkMode()" style="display:none;">🌙 Escuro</button>
+          <div class="nav-user-badge"><small id="user-info">Carregando...</small></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-wrap">
+${read('src/views/Tela_Cards.html')}
+${read('src/views/Tela_Admin.html')}
+${read('src/views/Tela_Empresa.html')}
+    </main>
+
+${read('src/views/Tela_Formulario.html')}
+${read('src/views/Modais.html')}
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
+`;
+
+fs.writeFileSync(path.join(root, 'index.html'), index, 'utf8');
+console.log('[SATE] index.html de deploy recriado com layout preservado.');

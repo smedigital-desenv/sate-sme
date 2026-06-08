@@ -1,0 +1,605 @@
+/* ══════════════════════════════════════════════════
+         TOKENS MAPA
+      ══════════════════════════════════════════════════ */
+      :root {
+        --primary:       #002b5e;
+        --neon-blue:     #00e5ff;
+        --neon-green:    #39FF14;
+        --neon-yellow:   #FFD300;
+        --verde:         #28a745;
+        --laranja:       #fd7e14;
+        --vermelho:      #dc3545;
+        --roxo:          #6f42c1;
+
+        /* Superfícies */
+        --fundo:         #f0f4f8;
+        --card-bg:       #ffffff;
+        --input-bg:      #ffffff;
+        --input-disabled:#e9ecef;
+        --borda:         #dbe5ef;
+        --texto:         #0f172a;
+        --texto-muted:   #64748b;
+        --modal-overlay: rgba(0,0,0,0.72);
+
+        /* Atalhos temáticos */
+        --azul-claro:    #eff6ff;
+      }
+
+      /* Dark Mode */
+      body.dark-mode {
+        --primary:       #1a3a6a;
+        --neon-blue:     #4da3ff;
+        --fundo:         #121212;
+        --card-bg:       #1e1e1e;
+        --input-bg:      #2b2b2b;
+        --input-disabled:#3a3a3a;
+        --borda:         #444444;
+        --texto:         #f0f0f0;
+        --texto-muted:   #94a3b8;
+        --azul-claro:    #1a2a3a;
+        --modal-overlay: rgba(0,0,0,0.88);
+      }
+
+      *, *::before, *::after { box-sizing: border-box; }
+
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--fundo);
+        color: var(--texto);
+        margin: 0;
+        padding-bottom: 60px;
+        overflow-x: hidden;
+        transition: background-color .3s, color .3s;
+      }
+
+      /* ── NAVBAR MAPA ─────────────────────────────────── */
+      .nav-header {
+        background: var(--primary);
+        color: white;
+        border-bottom: 5px solid var(--neon-blue);
+        padding: 1rem 1.5rem;
+        position: sticky; top: 0; z-index: 1000;
+        box-shadow: 0 4px 20px rgba(0,43,94,.35);
+      }
+      .nav-brand-icon {
+        width: 42px; height: 42px; border-radius: 12px;
+        background: rgba(0,229,255,.12);
+        border: 1px solid rgba(0,229,255,.35);
+        display: grid; place-items: center;
+        color: var(--neon-blue); flex-shrink: 0;
+        font-size: 1.3rem;
+      }
+      .nav-brand-title { font-size: 1.05rem; font-weight: 900; letter-spacing: .03em; line-height: 1; }
+      .nav-brand-sub   { font-size: .6rem; color: rgba(255,255,255,.62); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+      .nav-user-badge  {
+        font-size: .7rem; font-weight: 800; color: rgba(255,255,255,.8);
+        background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16);
+        border-radius: 999px; padding: 4px 12px; white-space: nowrap;
+      }
+
+      /* Botões do header */
+      .nav-btn {
+        font-size: .75rem; font-weight: 800;
+        padding: 6px 14px; border-radius: 9px;
+        border: 2px solid transparent;
+        cursor: pointer; transition: .18s; white-space: nowrap;
+        display: inline-flex; align-items: center; gap: 5px;
+      }
+      .nav-btn-ghost  { background: rgba(255,255,255,.12); color: #fff; border-color: rgba(255,255,255,.22); }
+      .nav-btn-ghost:hover { background: rgba(255,255,255,.22); }
+      .nav-btn-primary { background: var(--primary); color: var(--neon-blue); border-color: var(--neon-blue); }
+      .nav-btn-primary:hover { background: var(--neon-blue); color: var(--primary); box-shadow: 0 0 14px rgba(0,229,255,.5); }
+      .nav-btn-verde   { background: var(--verde); color: #fff; }
+      .nav-btn-verde:hover { opacity: .88; }
+      .nav-btn-laranja { background: var(--laranja); color: #fff; }
+      .nav-btn-laranja:hover { opacity: .88; }
+      .nav-btn-roxo    { background: var(--roxo); color: #fff; }
+      .nav-btn-roxo:hover { opacity: .88; }
+      .nav-btn-danger  { background: var(--vermelho); color: #fff; }
+      .nav-btn-dark    { background: #1e293b; color: #fff; }
+
+      /* ── NAVEGAÇÃO POR ABAS DA NAV ───────────────────── */
+      .nav-tabs-mapa {
+        display: flex; gap: 4px; flex-wrap: wrap;
+        background: rgba(255,255,255,.06);
+        border: 1px solid rgba(0,229,255,.18);
+        border-radius: 12px; padding: 4px;
+      }
+      .nav-tabs-mapa input[type="radio"] { display: none; }
+      .nav-tabs-mapa label {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 6px 14px; border-radius: 9px;
+        font-size: .75rem; font-weight: 800;
+        color: rgba(255,255,255,.68);
+        cursor: pointer; transition: .18s; white-space: nowrap;
+        border: 2px solid transparent;
+      }
+      .nav-tabs-mapa input[type="radio"]:checked + label {
+        background: var(--neon-blue); color: var(--primary);
+        box-shadow: 0 0 14px rgba(0,229,255,.55);
+      }
+      .nav-tabs-mapa label:hover { background: rgba(0,229,255,.14); color: #fff; }
+
+      /* ── CONTAINER PRINCIPAL ─────────────────────────── */
+      .main-wrap { max-width: 1400px; margin: 28px auto; padding: 0 1.5rem; }
+
+      /* ── TELAS ───────────────────────────────────────── */
+      .tela { display: none; animation: fadeIn .3s; }
+      .tela.ativa { display: block; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+      /* ── TOAST ───────────────────────────────────────── */
+      #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999999; display: flex; flex-direction: column; gap: 10px; }
+      .toast {
+        padding: 13px 22px; border-radius: 12px; color: white;
+        font-weight: 800; font-size: .82rem;
+        opacity: 0; transform: translateX(100%); transition: all .28s ease;
+        box-shadow: 0 6px 18px rgba(0,0,0,.22); pointer-events: none;
+        border-left: 4px solid rgba(255,255,255,.4);
+      }
+      .toast.show { opacity: 1; transform: translateX(0); }
+      .toast.success { background-color: var(--verde); }
+      .toast.error   { background-color: var(--vermelho); }
+      .toast.warning { background-color: var(--laranja); }
+
+      /* ── MODAL ───────────────────────────────────────── */
+      .modal-overlay {
+        display: none; position: fixed; top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background-color: var(--modal-overlay);
+        z-index: 99999; justify-content: center; align-items: center;
+        padding: 12px; transition: .3s;
+      }
+      .modal-content {
+        background-color: var(--card-bg); color: var(--texto);
+        padding: 28px; border-radius: 18px;
+        width: 100%; max-width: 800px; max-height: 95vh;
+        overflow-y: auto; position: relative;
+        box-shadow: 0 20px 60px rgba(0,0,0,.45);
+        border: 1px solid var(--borda);
+        transition: background-color .3s, color .3s;
+      }
+      .modal-title {
+        color: var(--primary); font-weight: 900; font-size: 1rem;
+        margin: 0 0 16px 0; padding-bottom: 14px;
+        border-bottom: 2px solid var(--borda);
+        display: flex; align-items: center; gap: 8px;
+      }
+      .close-btn {
+        position: absolute; top: 14px; right: 18px;
+        font-size: 1.6rem; cursor: pointer; border: none;
+        background: transparent; color: var(--texto-muted);
+        line-height: 1; transition: .15s;
+      }
+      .close-btn:hover { color: var(--vermelho); }
+
+      /* ── CARDS KPI ───────────────────────────────────── */
+      .card-kpi {
+        background: var(--card-bg); border-radius: 14px;
+        padding: 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,.06);
+        border: 1px solid var(--borda);
+        border-top: 4px solid currentColor;
+        text-align: center; transition: .2s;
+      }
+      .card-kpi:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,.1); }
+      .card-kpi .kpi-val { font-size: 2rem; font-weight: 900; line-height: 1.1; }
+      .card-kpi .kpi-label { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--texto-muted); margin-top: 4px; }
+
+      /* ── CARD GENÉRICO ───────────────────────────────── */
+      .card {
+        background-color: var(--card-bg); color: var(--texto);
+        border-radius: 14px; padding: 18px;
+        border: 1px solid var(--borda);
+        border-top: 4px solid var(--primary);
+        box-shadow: 0 4px 12px rgba(0,0,0,.06);
+        transition: .2s;
+      }
+      .card:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,.1); }
+
+      /* ── GRID DE CARDS ───────────────────────────────── */
+      .grid-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+      @media (max-width: 1100px) { .grid-cards { grid-template-columns: repeat(2, 1fr); } }
+      @media (max-width: 600px)  { .grid-cards { grid-template-columns: 1fr; } }
+
+      /* ── FORMULÁRIO ──────────────────────────────────── */
+      .form-row { display: flex; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+      .form-group { flex: 1; min-width: 200px; display: flex; flex-direction: column; }
+      .form-group label { margin-bottom: 5px; font-weight: 800; font-size: .72rem; color: var(--texto-muted); text-transform: uppercase; letter-spacing: .05em; }
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        background-color: var(--input-bg); color: var(--texto);
+        padding: 9px 12px; border: 1.5px solid var(--borda);
+        border-radius: 10px; font-size: .85rem; font-weight: 600;
+        outline: none; transition: .2s; width: 100%;
+      }
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus { border-color: var(--neon-blue); box-shadow: 0 0 0 3px rgba(0,229,255,.15); }
+      .form-group input:disabled,
+      .form-group select:disabled { background-color: var(--input-disabled); cursor: not-allowed; border-color: transparent; }
+      .checkbox-group {
+        flex-direction: row !important; align-items: center; gap: 10px;
+        background-color: var(--azul-claro); padding: 10px 14px;
+        border-radius: 10px; border: 1px solid var(--borda);
+      }
+
+      /* ── TURMA ROW ───────────────────────────────────── */
+      .turma-row {
+        padding: 7px 10px; margin-bottom: 2px; border-radius: 8px;
+        display: flex; align-items: center; cursor: pointer; transition: .15s; width: 100%;
+      }
+      .turma-row:nth-child(odd) { background-color: var(--azul-claro); }
+      .turma-row:hover { filter: brightness(.95); }
+
+      /* ── BOTÃO PRINCIPAL ─────────────────────────────── */
+      .btn-submit {
+        background-color: var(--primary); color: var(--neon-blue);
+        border: 2px solid var(--neon-blue); padding: 11px 18px;
+        font-size: .88rem; font-weight: 900; border-radius: 11px;
+        cursor: pointer; width: 100%; margin-top: 10px; transition: .2s;
+        display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      }
+      .btn-submit:hover:not(:disabled) { background: var(--neon-blue); color: var(--primary); box-shadow: 0 0 18px rgba(0,229,255,.45); }
+      .btn-submit:disabled { opacity: .45; cursor: not-allowed; }
+
+      /* ── BOTÕES DE AÇÃO ──────────────────────────────── */
+      .btn-avaliar, .btn-editar, .btn-danger {
+        padding: 5px 10px; border-radius: 7px; cursor: pointer;
+        font-weight: 800; font-size: .7rem; transition: .18s;
+        border: none; margin-right: 6px;
+      }
+      .btn-avaliar { background: var(--laranja); color: #fff; }
+      .btn-editar  { background: var(--primary); color: var(--neon-blue); border: 1px solid var(--neon-blue); }
+      .btn-danger  { background: var(--vermelho); color: #fff; }
+      .btn-avaliar:hover, .btn-editar:hover, .btn-danger:hover { opacity: .82; transform: scale(1.03); }
+
+      /* ── LOADER ──────────────────────────────────────── */
+      .loader { text-align: center; font-size: .88rem; font-weight: 800; color: var(--texto-muted); padding: 40px; }
+
+      /* ── PAGINAÇÃO ───────────────────────────────────── */
+      .paginacao-container { display: none; justify-content: center; align-items: center; gap: 14px; margin-top: 28px; }
+      .btn-paginacao {
+        padding: 8px 18px; border: 1.5px solid var(--borda);
+        background: var(--card-bg); color: var(--primary);
+        border-radius: 9px; cursor: pointer; font-weight: 800; transition: .18s;
+      }
+      .btn-paginacao:hover:not(:disabled) { border-color: var(--neon-blue); }
+      .btn-toggle-view {
+        background: transparent; color: var(--primary);
+        border: 1.5px solid var(--primary); padding: 7px 14px;
+        border-radius: 9px; cursor: pointer; font-size: .75rem; font-weight: 800; transition: .18s;
+      }
+      .btn-toggle-view:hover { background: var(--primary); color: #fff; }
+
+      /* ── FILTROS AVANÇADOS ───────────────────────────── */
+      .filtros-avancados {
+        background: var(--card-bg); padding: 14px 18px; border-radius: 13px;
+        margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,.05);
+        display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
+        border-left: 4px solid var(--primary); border: 1px solid var(--borda);
+      }
+
+      /* ── TABELA ──────────────────────────────────────── */
+      .table-container { background: var(--card-bg); border-radius: 14px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,.06); border: 1px solid var(--borda); }
+      table { width: 100%; border-collapse: collapse; text-align: left; }
+      th {
+        background: var(--primary); color: #fff;
+        padding: 11px 14px; font-size: .7rem; font-weight: 900;
+        text-transform: uppercase; letter-spacing: .06em;
+      }
+      td { padding: 11px 14px; border-bottom: 1px solid var(--borda); font-size: .8rem; }
+      tbody tr:hover { background-color: var(--azul-claro); }
+
+      /* ── VARIÁVEIS DA SIDEBAR ───────────────────────────────
+         --sb-w fica SEMPRE como a largura recolhida/reservada.
+         --sb-expanded-w é apenas a largura visual sobreposta.
+         Assim, ao expandir o menu, o conteúdo não é empurrado. */
+      :root {
+        --sb-w: 60px;
+        --sb-expanded-w: 220px;
+      }
+
+      /* ── LAYOUT ADMIN COM SIDEBAR SOBREPOSTA ───────────── */
+      #tela-admin { display: none; }
+      #tela-admin.ativa { display: block; }
+
+      /* Quando admin está ativo: main-wrap ocupa a tela inteira */
+      body.tela-admin-ativa .main-wrap {
+        max-width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+      .admin-sidebar {
+        position: fixed;
+        left: 0;
+        top: 70px;               /* logo abaixo do header */
+        bottom: 0;
+        width: var(--sb-w);
+        background: var(--primary);
+        padding: 10px 7px;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        overflow: hidden;
+        box-shadow: 3px 0 18px rgba(0,43,94,.22);
+        z-index: 1200;
+        transition: width .22s cubic-bezier(.4,0,.2,1), box-shadow .22s ease;
+        will-change: width;
+      }
+
+      .admin-sidebar.expandida {
+        width: var(--sb-expanded-w);
+        box-shadow: 8px 0 28px rgba(0,43,94,.32);
+      }
+
+      .admin-sidebar-toggle {
+        display: flex; align-items: center; justify-content: center;
+        width: 40px; height: 36px;
+        background: rgba(0,229,255,.12);
+        border: 1px solid rgba(0,229,255,.22);
+        border-radius: 10px; cursor: pointer; color: var(--neon-blue);
+        font-size: 1.1rem; transition: .18s;
+        flex-shrink: 0; margin-bottom: 8px; outline: none;
+      }
+      .admin-sidebar-toggle:hover { background: rgba(0,229,255,.22); }
+
+      .admin-sb-item {
+        display: flex; align-items: center; gap: 11px;
+        padding: 9px 9px; border-radius: 10px;
+        cursor: pointer; color: rgba(255,255,255,.62);
+        font-size: .8rem; font-weight: 800;
+        white-space: nowrap; overflow: hidden;
+        border: none; background: none; width: 100%;
+        text-align: left; transition: .18s;
+        flex-shrink: 0;
+      }
+      .admin-sb-item:hover { background: rgba(0,229,255,.1); color: rgba(255,255,255,.9); }
+      .admin-sb-item.ativo {
+        background: rgba(0,229,255,.16);
+        color: var(--neon-blue);
+        border-left: 3px solid var(--neon-blue);
+        padding-left: 6px;
+      }
+      .admin-sb-item .sb-icon { font-size: 1.15rem; flex-shrink: 0; }
+      .admin-sb-item .sb-txt {
+        opacity: 0; pointer-events: none;
+        transition: opacity .15s .05s;
+        font-size: .78rem;
+      }
+      /* Texto visível só quando expandida (controlado via JS na sidebar) */
+      .admin-sidebar.expandida .admin-sb-item .sb-txt { opacity: 1; pointer-events: auto; }
+
+      .admin-sb-separador {
+        height: 1px; background: rgba(255,255,255,.1);
+        margin: 5px 4px; flex-shrink: 0;
+      }
+
+      /* Conteúdo admin: reserva apenas a faixa recolhida do menu.
+         A expansão da sidebar acontece por cima e não altera este bloco. */
+      .admin-content {
+        margin-left: var(--sb-w);
+        padding: 24px 28px 24px 24px;
+        min-width: 0;
+        box-sizing: border-box;
+        width: calc(100% - var(--sb-w));
+      }
+
+      .aba-admin { display: none; animation: fadeIn .3s; }
+      .aba-admin.ativa { display: block; }
+
+      /* Tabs antigas — ocultas, substituídas pela sidebar */
+      .tabs-container { display: none; }
+
+      /* ── SUBTABS (PILLS) ─────────────────────────────── */
+      .subtabs-container { display: flex; gap: 7px; margin-bottom: 20px; overflow-x: auto; flex-wrap: wrap; }
+      .btn-subtab {
+        background: var(--input-disabled); border: none;
+        padding: 7px 16px; border-radius: 999px; cursor: pointer;
+        font-weight: 800; font-size: .74rem; color: var(--texto-muted); transition: .18s;
+        white-space: nowrap;
+      }
+      .btn-subtab:hover { color: var(--primary); background: var(--azul-claro); border-color: var(--primary); }
+      .btn-subtab.ativo { background: var(--primary); color: var(--neon-blue); box-shadow: 0 0 10px rgba(0,43,94,.25); }
+
+      /* Sub-abas ocultas */
+      .subaba, .subaba-escola, .subaba-agenda, .subaba-prog,
+      .subaba-frota-admin, .subaba-frota-empresa { display: none; animation: fadeIn .3s; }
+      .subaba.ativa, .subaba-escola.ativa, .subaba-agenda.ativa,
+      .subaba-prog.ativa, .subaba-frota-admin.ativa, .subaba-frota-empresa.ativa { display: block; }
+
+      /* ── CALENDÁRIO ──────────────────────────────────── */
+      .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 5px; margin-top: 10px; overflow-x: auto; }
+      .cal-header { font-weight: 900; text-align: center; color: var(--primary); font-size: .7rem; padding: 8px; background: var(--azul-claro); border-radius: 7px; }
+      .cal-day { border: 1px solid var(--borda); border-radius: 9px; padding: 5px; min-height: 100px; background: var(--card-bg); display: flex; flex-direction: column; overflow: hidden; transition: .15s; }
+      .cal-day.empty { background: transparent; border: none; }
+      .cal-date { align-self: center; font-size: 1rem; font-weight: 900; margin-bottom: 4px; color: var(--texto); }
+      .cal-period { flex: 1; border-top: 1px dashed var(--borda); margin-top: 2px; padding-top: 2px; display: flex; flex-direction: column; gap: 2px; }
+      .cal-period-title { font-size: .6rem; font-weight: 900; color: var(--texto-muted); text-align: center; margin-bottom: 2px; text-transform: uppercase; letter-spacing: .04em; }
+      .cal-event-dot {
+        cursor: pointer; padding: 3px 6px; font-size: .65rem; color: white;
+        border-radius: 6px; text-align: center; white-space: nowrap;
+        overflow: hidden; text-overflow: ellipsis; font-weight: 800;
+        transition: .15s;
+      }
+      .cal-event-dot:hover { filter: brightness(.85); transform: scale(1.02); }
+      .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+      .cal-nav button { padding: 9px 18px; cursor: pointer; border: none; background: var(--primary); color: var(--neon-blue); border-radius: 9px; font-weight: 800; font-size: .78rem; transition: .18s; }
+      .cal-nav button:hover { background: var(--neon-blue); color: var(--primary); }
+
+      /* ── AVISO LOTAÇÃO ───────────────────────────────── */
+      #aviso-lotacao { font-size: .75rem; padding: 8px 12px; border-radius: 9px; line-height: 1.4; border: 1px solid var(--borda); margin-top: 8px; font-weight: 700; }
+
+      /* ── MODAL DE AVALIAÇÃO ──────────────────────────── */
+      .detalhe-box {
+        background: var(--azul-claro); padding: 14px 16px; border-radius: 12px;
+        margin-bottom: 16px; font-size: .8rem; line-height: 1.7;
+        border: 1px solid var(--borda);
+      }
+      .detalhe-box p { margin: 0 0 2px 0; }
+      .painel-frota {
+        background: linear-gradient(135deg, var(--azul-claro) 0%, #cce0f5 100%);
+        border-left: 5px solid var(--primary);
+        padding: 14px 16px; border-radius: 12px; margin: 14px 0;
+        display: flex; align-items: center; gap: 14px;
+      }
+      .painel-frota-icon { font-size: 1.5rem; flex-shrink: 0; }
+      .painel-frota-title { font-size: .72rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: .05em; }
+      .painel-frota-val { font-size: .95rem; font-weight: 800; color: var(--texto); margin-top: 2px; }
+      .painel-frota-note { font-size: .65rem; opacity: .75; margin-top: 3px; }
+
+      /* ── HISTÓRICO ───────────────────────────────────── */
+      .historico-box {
+        padding: 10px 12px; background: var(--input-bg); border-radius: 8px;
+        max-height: 120px; overflow-y: auto; font-size: .7rem;
+        white-space: pre-wrap; font-family: 'Courier New', monospace;
+        border: 1px solid var(--borda); color: var(--texto-muted);
+      }
+
+      /* ── CARD-VEICULO ────────────────────────────────── */
+      .card-veiculo .badge-status {
+        display: inline-block; margin-top: 8px; padding: 3px 10px;
+        border-radius: 999px; font-size: .68rem; font-weight: 900;
+        border: 1px solid currentColor;
+      }
+
+      /* ── CALENDÁRIO DE DISPONIBILIDADE DE FROTA ───────────
+         Mantém cada dia alto o suficiente para exibir Manhã e Tarde.
+         Também evita que a grade fique achatada quando a tela estiver larga. */
+      #grade-frota-mes {
+        grid-template-columns: repeat(7, minmax(128px, 1fr)) !important;
+        align-items: stretch;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+      .frota-cal-header {
+        text-align: center;
+        font-size: .64rem;
+        font-weight: 900;
+        color: var(--texto-muted);
+        padding: 6px 4px;
+        min-width: 128px;
+      }
+      .frota-dia-vazio {
+        min-height: 86px;
+        min-width: 128px;
+      }
+      .frota-dia-cal {
+        min-height: 86px;
+        min-width: 128px;
+        padding: 7px 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        border: 1px solid rgba(0,0,0,.07);
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        transition: transform .15s, box-shadow .15s, filter .15s;
+      }
+      .frota-dia-cal:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,.08);
+        filter: brightness(.99);
+      }
+      .frota-dia-cal.plena { background: #d4edda; color: var(--verde); }
+      .frota-dia-cal.reduzida { background: #fff3cd; color: #856404; }
+      .frota-dia-cal.sem-frota { background: #fde8e8; color: var(--vermelho); }
+      .frota-dia-cal.fim-semana {
+        background: var(--input-disabled);
+        color: var(--texto-muted);
+        cursor: pointer;
+      }
+      .frota-dia-topo {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        font-size: .72rem;
+        font-weight: 900;
+        line-height: 1;
+      }
+      .frota-dia-data { color: inherit; }
+      .frota-dia-marcador {
+        color: var(--primary);
+        font-size: .7rem;
+      }
+      .frota-periodos-dia {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-top: 2px;
+      }
+      .frota-periodo-linha {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        padding: 4px 6px;
+        border-radius: 6px;
+        font-size: .62rem;
+        font-weight: 900;
+        background: rgba(255,255,255,.54);
+        border: 1px solid rgba(255,255,255,.55);
+      }
+      .frota-periodo-linha span {
+        color: var(--texto-muted);
+        white-space: nowrap;
+      }
+      .frota-periodo-linha strong {
+        color: inherit;
+        white-space: nowrap;
+      }
+      .frota-periodo-linha.sem { color: var(--vermelho); background: rgba(220,53,69,.10); }
+      .frota-periodo-linha.reduzida { color: #856404; background: rgba(255,193,7,.18); }
+      .frota-periodo-linha.plena { color: var(--verde); background: rgba(40,167,69,.12); }
+      .frota-fds-label {
+        flex: 1;
+        display: grid;
+        place-items: center;
+        font-size: .62rem;
+        font-weight: 900;
+        color: var(--texto-muted);
+      }
+
+      /* ── DESPACHO CARD ───────────────────────────────── */
+      .despacho-card {
+        background: var(--card-bg); border-radius: 14px;
+        padding: 16px; border: 1px solid var(--borda);
+        box-shadow: 0 4px 12px rgba(0,0,0,.06);
+        margin-bottom: 14px; transition: .2s;
+      }
+      .despacho-card-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--borda); padding-bottom: 8px; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+      .despacho-card-evento { font-weight: 900; color: var(--primary); font-size: .9rem; }
+      .tag-pill { font-size: .65rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+      .tag-azul  { background: var(--azul-claro); color: var(--primary); }
+      .tag-roxo  { background: #ede9fe; color: #5b21b6; }
+      .badge-extra { background: var(--vermelho); color: #fff; font-size: .6rem; font-weight: 900; padding: 2px 7px; border-radius: 5px; vertical-align: middle; margin-left: 5px; }
+
+      /* ── RESPONSIVO ──────────────────────────────────── */
+      @media (max-width: 768px) {
+        .main-wrap { padding: 0 .75rem; margin-top: 18px; }
+        .nav-header { padding: .75rem 1rem; }
+        .form-row { flex-direction: column; gap: 10px; }
+        .form-group { min-width: 100%; }
+
+        body.tela-admin-ativa {
+          --sb-w: 54px;
+          --sb-expanded-w: min(82vw, 260px);
+        }
+
+        .admin-sidebar {
+          padding: 8px 6px;
+        }
+
+        .admin-sidebar-toggle {
+          width: 38px;
+          height: 34px;
+        }
+
+        .admin-content {
+          padding: 18px 12px 24px 12px;
+        }
+      }

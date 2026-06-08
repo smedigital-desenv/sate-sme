@@ -1,0 +1,114 @@
+<div id="tela-escola" class="tela ativa">
+
+  <!-- SUBTABS -->
+  <div class="subtabs-container" style="border-bottom:2px solid var(--borda); padding-bottom:10px; margin-bottom:22px;">
+    <button class="btn-subtab ativo" onclick="mudarSubAbaEscola('painel')">Painel da Escola</button>
+    <button class="btn-subtab" onclick="mudarSubAbaEscola('calendario')">📅 Calendário</button>
+  </div>
+
+  <!-- ── PAINEL ────────────────────────────────────── -->
+  <div id="subaba-escola-painel" class="subaba-escola ativa">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+      <h3 style="margin:0; color:var(--primary); font-weight:900; font-size:1rem;">Acompanhamento de Solicitações</h3>
+      <button id="btn-view-mode" onclick="toggleViewMode()" class="btn-toggle-view">Visualização em Lista</button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-4">
+        <div class="card-kpi" style="color:var(--primary);">
+          <div class="kpi-val" id="user-dash-analise">0</div>
+          <div class="kpi-label">Em Análise</div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-4">
+        <div class="card-kpi" style="color:var(--verde);">
+          <div class="kpi-val" id="user-dash-aprovados">0</div>
+          <div class="kpi-label">Aprovados / Na Rota</div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-4">
+        <div class="card-kpi" style="color:var(--vermelho);">
+          <div class="kpi-val" id="user-dash-recusados">0</div>
+          <div class="kpi-label">Recusados / Cancelados</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros-avancados">
+      <div class="form-group" style="flex:2; min-width:200px;">
+        <label>Pesquisa Rápida</label>
+        <input type="text" id="filtro-user-busca" placeholder="Buscar evento, destino, status..." onkeyup="filtrarAcompanhamento()">
+      </div>
+      <div class="form-group">
+        <label>Data</label>
+        <input type="date" id="filtro-user-data" onchange="filtrarAcompanhamento()">
+      </div>
+      <div class="form-group">
+        <label>Destino</label>
+        <select id="filtro-user-destino" onchange="filtrarAcompanhamento()"><option value="">Todos</option></select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="filtro-user-status" onchange="filtrarAcompanhamento()"><option value="">Todos</option></select>
+      </div>
+      <div class="form-group">
+        <label>Turmas</label>
+        <select id="filtro-user-turmas" onchange="filtrarAcompanhamento()"><option value="">Todas</option></select>
+      </div>
+    </div>
+
+    <div id="loading-cards" class="loader">Carregando suas solicitações...</div>
+
+    <!-- Cards -->
+    <div id="escola-view-cards" class="grid-cards" style="margin-bottom:22px;">
+      <div id="meus-cards" style="display:contents;"></div>
+    </div>
+
+    <!-- Lista -->
+    <div id="escola-view-lista" style="display:none; margin-bottom:22px;" class="table-container">
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Data / Período</th>
+              <th>Unidade Escolar</th>
+              <th>Evento / Destino</th>
+              <th>Passageiros</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-escola-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Paginação -->
+    <div id="controles-paginacao" class="paginacao-container">
+      <button id="btn-prev" class="btn-paginacao" onclick="mudarPagina(-1)">◀ Anterior</button>
+      <span id="info-pagina" style="font-size:.82rem; color:var(--texto-muted); font-weight:800;">Página 1</span>
+      <button id="btn-next" class="btn-paginacao" onclick="mudarPagina(1)">Próxima ▶</button>
+    </div>
+
+  </div>
+
+  <!-- ── CALENDÁRIO ────────────────────────────────── -->
+  <div id="subaba-escola-calendario" class="subaba-escola">
+    <div class="card" style="border-top:none; border-radius:14px;">
+      <div class="cal-nav">
+        <button onclick="mudarMes(-1)">◀ Anterior</button>
+        <h3 id="cal-mes-ano" style="margin:0; color:var(--primary); font-weight:900; font-size:1rem;">Mês Ano</h3>
+        <button onclick="mudarMes(1)">Próximo ▶</button>
+      </div>
+      <div class="cal-grid">
+        <div class="cal-header">Dom</div><div class="cal-header">Seg</div><div class="cal-header">Ter</div>
+        <div class="cal-header">Qua</div><div class="cal-header">Qui</div><div class="cal-header">Sex</div><div class="cal-header">Sáb</div>
+      </div>
+      <div id="cal-dias" class="cal-grid"></div>
+    </div>
+  </div>
+
+</div>
